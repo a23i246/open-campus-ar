@@ -253,15 +253,15 @@
 
       position: fixed !important;
 
-      /* 右端の黒い隙間だけを隠すため、ほんの少しだけ広げる */
       top: 0 !important;
-      left: -2px !important;
+      left: -12px !important;
+      right: auto !important;
 
-      width: calc(100vw + 4px) !important;
+      width: calc(100vw + 24px) !important;
       height: 100vh !important;
       height: 100dvh !important;
 
-      min-width: calc(100vw + 4px) !important;
+      min-width: calc(100vw + 24px) !important;
       min-height: 100dvh !important;
 
       max-width: none !important;
@@ -269,25 +269,22 @@
 
       object-fit: cover !important;
       z-index: 0 !important;
-
-      /* ここは none のまま。変な反転・拡大はしない */
       transform: none !important;
-
       background: #000 !important;
-    }    
+    }
 
     canvas, .a-canvas {
       position: fixed !important;
 
-      /* video と同じだけ広げる */
       top: 0 !important;
-      left: -2px !important;
+      left: -12px !important;
+      right: auto !important;
 
-      width: calc(100vw + 4px) !important;
+      width: calc(100vw + 24px) !important;
       height: 100vh !important;
       height: 100dvh !important;
 
-      min-width: calc(100vw + 4px) !important;
+      min-width: calc(100vw + 24px) !important;
       min-height: 100dvh !important;
 
       max-width: none !important;
