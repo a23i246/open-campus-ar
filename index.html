@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>恐竜ARスタンプラリー</title>
+  <meta name="theme-color" content="#2563eb">
+  <link rel="stylesheet" href="css/common.css">
+  <script src="js/dinosaurs.js"></script>
+  <script defer src="js/preload.js"></script>
+  <script defer src="js/game.js"></script>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <h1>恐竜ARスタンプラリー</h1>
+      <p>会場Wi-Fiに接続したまま、まずは恐竜モデルを読み込みます。準備中はミニゲームで遊べます。</p>
+    </section>
+
+    <section class="card">
+      <h2>準備状況</h2>
+      <div class="progress-box">
+        <div class="progress-row"><span>読み込み</span><span data-progress-text>0%</span></div>
+        <div class="progress-track"><div class="progress-fill" data-progress-bar></div></div>
+        <div class="small" data-progress-count>0 / 0 ファイル読み込み完了</div>
+        <div class="small" data-progress-current></div>
+      </div>
+      <div class="notice" data-preload-result>読み込み中です。会場Wi-Fiから離れないでください。</div>
+      <div class="actions">
+        <a class="button" data-requires-cache href="ar.html?mode=trial" aria-disabled="true">お試しARを始める</a>
+        <a class="button secondary" href="collection.html">コレクションを見る</a>
+      </div>
+      <p class="small">※読み込み完了まではAR開始ボタンを押せません。通信が不安定な場合は再読み込みしてください。</p>
+    </section>
+
+    <section class="card">
+      <h2>読み込み中ミニゲーム</h2>
+      <p class="small">化石を集めながら読み込み完了を待ってください。ゲーム中も上の進行率が更新されます。</p>
+      <div class="game-wrap">
+        <canvas id="mini-game-canvas"></canvas>
+        <div class="game-hud">SCORE <span data-game-score>0</span></div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>遊び方</h2>
+        <p>1. 準備完了まで待つ<br>2. お試しマーカーでカメラ確認<br>3. 会場内のマーカーを探す<br>4. 認識した恐竜をコレクションに追加</p>
+      </div>
+      <div class="card">
+        <h2>ARが動かない場合</h2>
+        <p>カメラ許可、会場Wi-Fi、ブラウザの再読み込みを確認してください。どうしても動かない場合はスタッフ用の手動追加も用意できます。</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
