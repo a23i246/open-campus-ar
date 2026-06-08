@@ -81,7 +81,7 @@
       const dino = findDino(currentDinoId);
       const name = dino ? dino.name : '3Dモデル';
       setCurrentName(name);
-      setStatus(`${name} を認識中です。見切れる場合はスマホを少し引いてください。`);
+      setStatus(`${name} を認識中です。モデルを読み込んでいます。`);
     }
 
     updateButton();
@@ -122,8 +122,6 @@
         el.style.setProperty('position', 'fixed', 'important');
         el.style.setProperty('top', '0', 'important');
         el.style.setProperty('left', '0', 'important');
-        el.style.setProperty('right', 'auto', 'important');
-        el.style.setProperty('bottom', 'auto', 'important');
         el.style.setProperty('width', pixelWidth, 'important');
         el.style.setProperty('height', pixelHeight, 'important');
         el.style.setProperty('max-width', 'none', 'important');
@@ -187,10 +185,6 @@
           const dino = dinoId ? findDino(dinoId) : null;
           const mesh = this.el.getObject3D('mesh');
 
-          if (dino) {
-            setStatus(`${dino.name} の3Dモデルを読み込みました。マーカーにかざしてください。`);
-          }
-
           if (!mesh || !window.THREE) return;
 
           this.el.object3D.scale.set(1, 1, 1);
@@ -214,10 +208,63 @@
             -center.z * scale
           );
           this.el.object3D.updateMatrixWorld(true);
+
+          if (dino) {
+            setStatus(`${dino.name} の3Dモデルを表示しました。見切れる場合はスマホを少し引いてください。`);
+          }
           forceArLayout();
         });
       }
     });
+  }
+
+  function createDebugBox(holder) {
+    if (holder.querySelector('.debug-box')) return;
+    const box = document.createElement('a-box');
+    box.classList.add('debug-box');
+    box.setAttribute('position', '0 0.15 0');
+    box.setAttribute('depth', '0.35');
+    box.setAttribute('height', '0.3');
+    box.setAttribute('width', '0.35');
+    box.setAttribute('color', '#22c55e');
+    box.setAttribute('opacity', '0.75');
+    holder.appendChild(box);
+  }
+
+  function removeDebugBox(holder) {
+    const box = holder.querySelector('.debug-box');
+    if (box) box.remove();
+  }
+
+  function ensureModel(marker) {
+    const id = marker.dataset.dinoId;
+    const dino = findDino(id);
+    const holder = marker.querySelector('.model-holder');
+    if (!holder || !dino || !dino.model) return;
+
+    if (holder.querySelector('.dino-model')) return;
+
+    createDebugBox(holder);
+
+    const model = document.createElement('a-entity');
+    model.classList.add('dino-model');
+    model.setAttribute('gltf-model', `url(${dino.model})`);
+    model.setAttribute('fit-on-marker', `target: ${marker.dataset.target || '1.3'}; yOffset: 0.05`);
+    model.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 12000');
+
+    model.addEventListener('model-loaded', () => {
+      removeDebugBox(holder);
+      const name = dino.name || '3Dモデル';
+      setStatus(`${name} の3Dモデルを表示しました。見切れる場合はスマホを少し引いてください。`);
+    });
+
+    model.addEventListener('model-error', (event) => {
+      console.error('モデル読み込み失敗:', id, event.detail);
+      const name = dino.name || '3Dモデル';
+      setStatus(`${name} の読み込みに失敗しました。assets/models のファイル名を確認してください。`);
+    });
+
+    holder.appendChild(model);
   }
 
   function initMarkerEvents() {
@@ -229,6 +276,7 @@
       marker.addEventListener('markerFound', () => {
         visibleDinoIds.add(id);
         chooseCurrentDino();
+        ensureModel(marker);
         forceArLayout();
       });
 
@@ -236,18 +284,6 @@
         visibleDinoIds.delete(id);
         chooseCurrentDino();
         forceArLayout();
-      });
-    });
-
-    document.querySelectorAll('.dino-model').forEach((modelEl) => {
-      if (modelEl.dataset.errorReady === 'true') return;
-      modelEl.dataset.errorReady = 'true';
-      modelEl.addEventListener('model-error', (event) => {
-        const marker = modelEl.closest('a-marker');
-        const id = marker ? marker.dataset.dinoId : '';
-        const dino = id ? findDino(id) : null;
-        console.error('モデル読み込み失敗:', id, event.detail);
-        setStatus(`${dino ? dino.name : '3Dモデル'} の読み込みに失敗しました。assets/models のファイル名を確認してください。`);
       });
     });
   }
