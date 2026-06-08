@@ -62,29 +62,68 @@
       }
     });
 
-    // カメラ映像が黒背景に隠れないよう、canvasを透明にする補正
-    function keepTransparentRenderer() {
+    // カメラ映像が黒背景に隠れないようにする補正。
+    // AR.jsは video を z-index:-2 付近で生成することがあり、
+    // Android Chromeではcanvasだけ見えてカメラ背景が黒になる場合がある。
+    function keepCameraBackgroundVisible() {
       const scene = document.querySelector('a-scene');
       if (scene && scene.renderer && window.THREE) {
         try {
           scene.renderer.setClearColor(new THREE.Color(0x000000), 0);
+          scene.renderer.setClearAlpha(0);
           scene.renderer.autoClear = true;
+          if (scene.object3D) scene.object3D.background = null;
         } catch (e) {}
       }
-      document.querySelectorAll('a-scene, canvas, .a-canvas').forEach((el) => {
-        el.style.background = 'transparent';
+
+      document.documentElement.style.background = 'transparent';
+      document.body.style.background = 'transparent';
+
+      document.querySelectorAll('video, #arjs-video').forEach((el) => {
+        el.style.setProperty('display', 'block', 'important');
+        el.style.setProperty('visibility', 'visible', 'important');
+        el.style.setProperty('opacity', '1', 'important');
+        el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('top', '0', 'important');
+        el.style.setProperty('left', '0', 'important');
+        el.style.setProperty('right', '0', 'important');
+        el.style.setProperty('bottom', '0', 'important');
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100dvh', 'important');
+        el.style.setProperty('max-width', 'none', 'important');
+        el.style.setProperty('max-height', 'none', 'important');
+        el.style.setProperty('object-fit', 'cover', 'important');
+        el.style.setProperty('z-index', '0', 'important');
+        el.style.setProperty('transform', 'none', 'important');
       });
-      document.querySelectorAll('video').forEach((el) => {
-        el.style.position = 'fixed';
-        el.style.inset = '0';
-        el.style.width = '100vw';
-        el.style.height = '100vh';
-        el.style.objectFit = 'cover';
+
+      document.querySelectorAll('a-scene, canvas, .a-canvas').forEach((el) => {
+        el.style.setProperty('background', 'transparent', 'important');
+      });
+
+      document.querySelectorAll('a-scene').forEach((el) => {
+        el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('inset', '0', 'important');
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100dvh', 'important');
+        el.style.setProperty('z-index', '1', 'important');
+      });
+
+      document.querySelectorAll('canvas, .a-canvas').forEach((el) => {
+        el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('top', '0', 'important');
+        el.style.setProperty('left', '0', 'important');
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100dvh', 'important');
+        el.style.setProperty('z-index', '2', 'important');
+        el.style.setProperty('pointer-events', 'none', 'important');
       });
     }
 
     window.addEventListener('load', () => {
-      [300, 800, 1500, 3000].forEach(ms => setTimeout(keepTransparentRenderer, ms));
+      [100, 300, 700, 1200, 2000, 3500, 6000].forEach(ms => setTimeout(keepCameraBackgroundVisible, ms));
+      const observer = new MutationObserver(() => keepCameraBackgroundVisible());
+      observer.observe(document.body, { childList: true, subtree: true });
     });
   </script>
 
@@ -95,7 +134,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #000;
+      background: transparent;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
@@ -170,10 +209,26 @@
       width: 100vw !important;
       height: 100vh !important;
       background: transparent !important;
+      z-index: 1 !important;
+    }
+
+    video, #arjs-video {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100dvh !important;
+      object-fit: cover !important;
+      z-index: 0 !important;
+      transform: none !important;
     }
 
     canvas, .a-canvas {
       background: transparent !important;
+      z-index: 2 !important;
+      pointer-events: none !important;
     }
   </style>
 </head>
@@ -224,6 +279,13 @@
 
   <script>
     const statusEl = document.getElementById('status');
+    const sceneEl = document.querySelector('a-scene');
+    if (sceneEl) {
+      sceneEl.addEventListener('renderstart', () => {
+        keepCameraBackgroundVisible();
+        setTimeout(keepCameraBackgroundVisible, 500);
+      });
+    }
     const marker = document.getElementById('test-marker');
 
     marker.addEventListener('markerFound', () => {
