@@ -1,4 +1,4 @@
-const CACHE_NAME = 'oc-ar-cache-v8';
+const CACHE_NAME = 'open-campus-ar-minimal-box-test-v1';
 const CORE_ASSETS = [
   './',
   './index.html',

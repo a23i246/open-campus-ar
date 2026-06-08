@@ -3,91 +3,162 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>ARカメラ - 恐竜ARスタンプラリー</title>
-  <link rel="stylesheet" href="css/ar.css">
-  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  <script src="js/dinosaurs.js"></script>
-  <script src="js/collection.js"></script>
-  <script src="js/ar-main.js" defer></script>
+  <title>AR最小テスト - pattern-stanp1</title>
+
+  <!-- AR.jsで比較的使われている安定寄りの組み合わせ -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .top-help {
+      position: fixed;
+      top: calc(12px + env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      background: rgba(255,255,255,0.94);
+      color: #111827;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      text-align: center;
+      width: calc(100% - 48px);
+      max-width: 560px;
+      box-sizing: border-box;
+    }
+
+    .panel {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      z-index: 9999;
+      background: rgba(15, 23, 42, 0.92);
+      color: #fff;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      border-radius: 20px;
+      padding: 16px;
+      box-sizing: border-box;
+      backdrop-filter: blur(10px);
+    }
+
+    .title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    #status {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #e5e7eb;
+      margin-bottom: 12px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .actions a {
+      display: inline-block;
+      background: #fff;
+      color: #111827;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 800;
+    }
+
+    /* このテストではAR.js標準のvideo/canvas配置をなるべく壊さない */
+    a-scene {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+  </style>
 </head>
 <body>
-  <div id="start-screen" class="start-screen">
-    <div class="start-card">
-      <h1>ARカメラ</h1>
-      <p>カメラを起動して、マーカー全体が画面に入るようにかざしてください。</p>
-      <button id="start-ar-button" type="button">カメラを起動する</button>
-      <div class="start-links">
-        <a href="collection.html">コレクションを見る</a>
-        <a href="index.html">トップへ戻る</a>
-      </div>
-      <p class="small-note">カメラ許可が表示されたら「許可」を押してください。</p>
+  <div class="top-help">pattern-stanp1 をかざしてください。赤い箱が出れば3D描画成功です。</div>
+
+  <div class="panel">
+    <div class="title">
+      <span>AR最小テスト</span>
+      <span>pattern-stanp1</span>
+    </div>
+    <div id="status">マーカーを探しています。カメラ許可が出たら許可してください。</div>
+    <div class="actions">
+      <a href="collection.html">コレクション</a>
+      <a href="index.html">トップへ</a>
     </div>
   </div>
 
-  <div id="ar-root" class="ar-root" aria-hidden="true"></div>
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
 
-  <div id="top-help" class="top-help" hidden><span>マーカー全体が画面に入るようにかざしてください</span></div>
+    <a-marker id="test-marker" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true">
+      <!-- まずはGLBなし。絶対に見えやすい基本図形だけ。 -->
+      <a-box
+        position="0 0.5 0"
+        width="1"
+        height="1"
+        depth="1"
+        color="#ff0000"
+        opacity="1"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
+      </a-box>
+      <a-cylinder
+        position="0 0.03 0"
+        radius="0.9"
+        height="0.06"
+        color="#2563eb"
+        opacity="1">
+      </a-cylinder>
+      <a-sphere
+        position="0 1.25 0"
+        radius="0.25"
+        color="#22c55e">
+      </a-sphere>
+    </a-marker>
 
-  <div id="ar-ui" class="ar-ui" hidden>
-    <div class="ar-panel">
-      <div class="ar-title">
-        <span>ARカメラ</span>
-        <span id="collected-count">0 / 6</span>
-      </div>
-      <div class="ar-status" id="ar-status">マーカーを探しています。マーカー全体が画面に入るようにしてください。</div>
-      <div class="ar-actions">
-        <button id="add-collection" disabled>コレクションに追加</button>
-        <a href="collection.html">コレクション</a>
-        <a href="index.html">トップへ</a>
-      </div>
-    </div>
-  </div>
+    <a-entity camera></a-entity>
+  </a-scene>
 
-  <template id="ar-scene-template">
-    <a-scene
-      id="ar-scene"
-      embedded
-      renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
-      gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;"
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
-      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
+  <script>
+    const statusEl = document.getElementById('status');
+    const marker = document.getElementById('test-marker');
 
-      <a-assets id="model-assets" timeout="30000"></a-assets>
+    marker.addEventListener('markerFound', () => {
+      statusEl.textContent = 'pattern-stanp1 を認識しました。赤い箱・青い土台・緑の球が出ているか確認してください。';
+    });
 
-      <!--
-        pattern-stanp.patt はお試し用ファイルとして assets/markers に残しています。
-        ただし現在の pattern-stanp.patt と pattern-stanp1.patt が同一内容のため、
-        同時に a-marker として読み込むと pattern-stanp1 が「お試しマーカー」として認識されます。
-        そのため、AR画面ではお試しマーカーは読み込まず、pattern-stanp1 をプロトケラトプス専用にしています。
-      -->
+    marker.addEventListener('markerLost', () => {
+      statusEl.textContent = 'マーカーを見失いました。もう一度 pattern-stanp1 全体を画面に入れてください。';
+    });
 
-      <a-marker id="marker-protoceratops" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true" data-dino-id="protoceratops">
-        <!-- 認識確認用。これが出れば「3D描画は成功」です。かなり大きめに表示しています。 -->
-        <a-box position="0 0.5 0" depth="1.0" height="1.0" width="1.0" color="#ff0000" opacity="0.95" animation="property: rotation; to: 0 360 0; loop: true; dur: 4000"></a-box>
-        <a-cylinder radius="0.95" height="0.08" position="0 0.04 0" color="#2563eb" opacity="0.95"></a-cylinder>
-        <a-sphere radius="0.35" position="0 1.25 0" color="#22c55e"></a-sphere>
-        <a-entity class="dino-model" gltf-model="url(assets/models/protoceratops.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
-      </a-marker>
-      <a-marker id="marker-ravjaa" type="pattern" url="assets/markers/pattern-stanp2.patt" emitevents="true" data-dino-id="ravjaa">
-        <a-entity class="dino-model" gltf-model="url(assets/models/ravjaa.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
-      </a-marker>
-      <a-marker id="marker-corythosaurus" type="pattern" url="assets/markers/pattern-stanp3.patt" emitevents="true" data-dino-id="corythosaurus">
-        <a-entity class="dino-model" gltf-model="url(assets/models/corythosaurus.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
-      </a-marker>
-      <a-marker id="marker-zavacephale" type="pattern" url="assets/markers/pattern-stanp4.patt" emitevents="true" data-dino-id="zavacephale">
-        <a-entity class="dino-model" gltf-model="url(assets/models/zavacephale.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
-      </a-marker>
-      <a-marker id="marker-pinacosaurus" type="pattern" url="assets/markers/pattern-stanp5.patt" emitevents="true" data-dino-id="pinacosaurus">
-        <a-entity class="dino-model" gltf-model="url(assets/models/raujaa.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
-      </a-marker>
-      <a-marker id="marker-tarbosaurus" type="pattern" url="assets/markers/pattern-stanp6.patt" emitevents="true" data-dino-id="tarbosaurus">
-        <a-entity class="dino-model" gltf-model="url(assets/models/torikosaurusu.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
-      </a-marker>
-
-      <a-entity camera></a-entity>
-    </a-scene>
-  </template>
+    window.addEventListener('error', (e) => {
+      statusEl.textContent = 'エラー: ' + (e.message || '不明なエラー');
+    });
+  </script>
 </body>
 </html>
