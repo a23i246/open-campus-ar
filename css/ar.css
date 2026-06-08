@@ -219,3 +219,33 @@ body > canvas {
   .ar-actions button,
   .ar-actions a { min-height: 34px; padding: 7px 10px; font-size: 13px; }
 }
+
+/* --- 3D描画がカメラ映像の後ろに隠れる対策 --- */
+#ar-root {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+#ar-scene,
+a-scene,
+a-scene canvas,
+.a-canvas {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10 !important;
+  pointer-events: none !important;
+}
+video,
+body > video,
+#arjs-video,
+#arjs-video video {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+.top-help,
+.ar-ui {
+  z-index: 20000 !important;
+}

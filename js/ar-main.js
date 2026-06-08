@@ -110,8 +110,14 @@
       el.style.maxHeight = 'none';
       el.style.margin = '0';
       el.style.transform = 'none';
-      if (el.tagName.toLowerCase() === 'video') {
+      const tag = el.tagName.toLowerCase();
+      if (tag === 'video') {
         el.style.objectFit = 'cover';
+        el.style.setProperty('z-index', '0', 'important');
+        el.style.setProperty('pointer-events', 'none', 'important');
+      } else if (tag === 'canvas' || el.classList.contains('a-canvas') || tag === 'a-scene') {
+        el.style.setProperty('z-index', '10', 'important');
+        el.style.setProperty('pointer-events', 'none', 'important');
       }
     });
 

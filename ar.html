@@ -35,7 +35,7 @@
         <span>ARカメラ</span>
         <span id="collected-count">0 / 6</span>
       </div>
-      <div class="ar-status" id="ar-status">マーカーを探しています。お試しマーカーではカメラ確認だけできます。</div>
+      <div class="ar-status" id="ar-status">マーカーを探しています。マーカー全体が画面に入るようにしてください。</div>
       <div class="ar-actions">
         <button id="add-collection" disabled>コレクションに追加</button>
         <a href="collection.html">コレクション</a>
@@ -64,9 +64,10 @@
       -->
 
       <a-marker id="marker-protoceratops" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true" data-dino-id="protoceratops">
-        <!-- 認識確認用。モデルが重くても、まず青い土台と黄色の箱が出れば3D表示自体は成功です。 -->
-        <a-cylinder radius="0.60" height="0.06" position="0 0.03 0" color="#2563eb" opacity="0.90"></a-cylinder>
-        <a-box position="0 0.35 0" depth="0.35" height="0.35" width="0.35" color="#facc15" rotation="0 45 0" animation="property: rotation; to: 0 405 0; loop: true; dur: 5000"></a-box>
+        <!-- 認識確認用。これが出れば「3D描画は成功」です。かなり大きめに表示しています。 -->
+        <a-box position="0 0.5 0" depth="1.0" height="1.0" width="1.0" color="#ff0000" opacity="0.95" animation="property: rotation; to: 0 360 0; loop: true; dur: 4000"></a-box>
+        <a-cylinder radius="0.95" height="0.08" position="0 0.04 0" color="#2563eb" opacity="0.95"></a-cylinder>
+        <a-sphere radius="0.35" position="0 1.25 0" color="#22c55e"></a-sphere>
         <a-entity class="dino-model" gltf-model="url(assets/models/protoceratops.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
       </a-marker>
       <a-marker id="marker-ravjaa" type="pattern" url="assets/markers/pattern-stanp2.patt" emitevents="true" data-dino-id="ravjaa">

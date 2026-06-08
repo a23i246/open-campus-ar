@@ -1,4 +1,4 @@
-const CACHE_NAME = 'oc-dinosaur-ar-v3';
+const CACHE_NAME = 'oc-ar-cache-v8';
 const CORE_ASSETS = [
   './',
   './index.html',
