@@ -63,116 +63,80 @@
     });
 
     // カメラ映像が黒背景に隠れないようにする補正。
-    // AR.jsは video を z-index:-2 付近で生成することがあり、
-    // Android Chromeではcanvasだけ見えてカメラ背景が黒になる場合がある。
-    function getViewportSize() {
-      const vv = window.visualViewport;
-      const width = Math.max(
-        1,
-        Math.round(window.innerWidth || 0),
-        Math.round(document.documentElement.clientWidth || 0),
-        Math.round(vv ? vv.width : 0)
-      );
-      const height = Math.max(
-        1,
-        Math.round(window.innerHeight || 0),
-        Math.round(document.documentElement.clientHeight || 0),
-        Math.round(vv ? vv.height : 0)
-      );
-      return { width, height };
-    }
-
-    // AR.js の video と A-Frame の canvas の表示サイズがズレると、
-    // マーカー認識位置とモデル表示位置がズレるため、両方を同じpxサイズへ強制する。
+    // 前回の強制補正は Android Chrome で白画面になる可能性があったため、
+    // canvas の実サイズ変更や body の px 固定はしない安全版に戻しています。
     function keepCameraBackgroundVisible() {
-      const { width, height } = getViewportSize();
-      const pxWidth = width + 'px';
-      const pxHeight = height + 'px';
-
       const scene = document.querySelector('a-scene');
       if (scene && scene.renderer && window.THREE) {
         try {
           scene.renderer.setClearColor(new THREE.Color(0x000000), 0);
           scene.renderer.setClearAlpha(0);
           scene.renderer.autoClear = true;
-          scene.renderer.setSize(width, height, false);
           if (scene.object3D) scene.object3D.background = null;
         } catch (e) {}
       }
 
-      [document.documentElement, document.body].forEach((el) => {
-        el.style.setProperty('margin', '0', 'important');
-        el.style.setProperty('padding', '0', 'important');
-        el.style.setProperty('width', pxWidth, 'important');
-        el.style.setProperty('height', pxHeight, 'important');
-        el.style.setProperty('min-width', pxWidth, 'important');
-        el.style.setProperty('min-height', pxHeight, 'important');
-        el.style.setProperty('overflow', 'hidden', 'important');
-        el.style.setProperty('background', '#000', 'important');
-      });
-      document.body.style.setProperty('position', 'fixed', 'important');
-      document.body.style.setProperty('inset', '0', 'important');
+      document.documentElement.style.setProperty('margin', '0', 'important');
+      document.documentElement.style.setProperty('padding', '0', 'important');
+      document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+      document.documentElement.style.setProperty('background', '#000', 'important');
+      document.body.style.setProperty('margin', '0', 'important');
+      document.body.style.setProperty('padding', '0', 'important');
+      document.body.style.setProperty('overflow', 'hidden', 'important');
+      document.body.style.setProperty('background', '#000', 'important');
 
-      document.querySelectorAll('video, #arjs-video, a-scene, canvas, .a-canvas').forEach((el) => {
+      document.querySelectorAll('video, #arjs-video').forEach((el) => {
         el.style.setProperty('display', 'block', 'important');
         el.style.setProperty('visibility', 'visible', 'important');
         el.style.setProperty('opacity', '1', 'important');
         el.style.setProperty('position', 'fixed', 'important');
         el.style.setProperty('top', '0', 'important');
         el.style.setProperty('left', '0', 'important');
-        el.style.setProperty('right', 'auto', 'important');
-        el.style.setProperty('bottom', 'auto', 'important');
-        el.style.setProperty('width', pxWidth, 'important');
-        el.style.setProperty('height', pxHeight, 'important');
-        el.style.setProperty('min-width', pxWidth, 'important');
-        el.style.setProperty('min-height', pxHeight, 'important');
+        el.style.setProperty('right', '0', 'important');
+        el.style.setProperty('bottom', '0', 'important');
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100dvh', 'important');
         el.style.setProperty('max-width', 'none', 'important');
         el.style.setProperty('max-height', 'none', 'important');
-        el.style.setProperty('margin', '0', 'important');
-        el.style.setProperty('padding', '0', 'important');
-        el.style.setProperty('transform', 'none', 'important');
-        el.style.setProperty('box-sizing', 'border-box', 'important');
-      });
-
-      document.querySelectorAll('video, #arjs-video').forEach((el) => {
         el.style.setProperty('object-fit', 'cover', 'important');
         el.style.setProperty('z-index', '0', 'important');
-        el.style.setProperty('pointer-events', 'none', 'important');
+        el.style.setProperty('transform', 'none', 'important');
         el.style.setProperty('background', '#000', 'important');
       });
 
       document.querySelectorAll('a-scene').forEach((el) => {
+        el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('inset', '0', 'important');
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100dvh', 'important');
         el.style.setProperty('z-index', '1', 'important');
         el.style.setProperty('background', 'transparent', 'important');
+        el.style.setProperty('overflow', 'hidden', 'important');
       });
 
       document.querySelectorAll('canvas, .a-canvas').forEach((el) => {
+        el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('top', '0', 'important');
+        el.style.setProperty('left', '0', 'important');
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100dvh', 'important');
+        el.style.setProperty('max-width', 'none', 'important');
+        el.style.setProperty('max-height', 'none', 'important');
         el.style.setProperty('z-index', '2', 'important');
         el.style.setProperty('pointer-events', 'none', 'important');
         el.style.setProperty('background', 'transparent', 'important');
-        if (el.tagName && el.tagName.toLowerCase() === 'canvas') {
-          const dpr = Math.min(window.devicePixelRatio || 1, 2);
-          const realWidth = Math.round(width * dpr);
-          const realHeight = Math.round(height * dpr);
-          if (el.width !== realWidth) el.width = realWidth;
-          if (el.height !== realHeight) el.height = realHeight;
-        }
+        el.style.setProperty('transform', 'none', 'important');
       });
+
+      if (scene && typeof scene.resize === 'function') {
+        try { scene.resize(); } catch (e) {}
+      }
     }
 
     window.addEventListener('load', () => {
-      [50, 100, 250, 500, 900, 1400, 2200, 3500, 6000, 9000].forEach(ms => setTimeout(keepCameraBackgroundVisible, ms));
+      [100, 300, 700, 1200, 2000, 3500, 6000].forEach(ms => setTimeout(keepCameraBackgroundVisible, ms));
       const observer = new MutationObserver(() => keepCameraBackgroundVisible());
-      observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-      window.addEventListener('resize', () => setTimeout(keepCameraBackgroundVisible, 100));
-      window.addEventListener('orientationchange', () => {
-        setTimeout(keepCameraBackgroundVisible, 300);
-        setTimeout(keepCameraBackgroundVisible, 900);
-      });
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', keepCameraBackgroundVisible);
-        window.visualViewport.addEventListener('scroll', keepCameraBackgroundVisible);
-      }
+      observer.observe(document.body, { childList: true, subtree: true });
     });
   </script>
 
@@ -184,8 +148,6 @@
       height: 100%;
       overflow: hidden;
       background: #000;
-      position: fixed;
-      inset: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
@@ -258,10 +220,9 @@
       position: fixed !important;
       inset: 0 !important;
       width: 100vw !important;
-      height: 100dvh !important;
+      height: 100vh !important;
       background: transparent !important;
       z-index: 1 !important;
-      overflow: hidden !important;
     }
 
     video, #arjs-video {
