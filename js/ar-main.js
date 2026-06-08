@@ -1,4 +1,49 @@
 (function () {
+
+  // GLBモデルの中心がマーカーからズレている場合でも、
+  // マーカー上に収まるように自動で中心合わせ・サイズ調整するコンポーネント。
+  // target: マーカー1辺に対して、モデルをどれくらいの大きさで置くか。
+  if (window.AFRAME && !AFRAME.components['fit-on-marker']) {
+    AFRAME.registerComponent('fit-on-marker', {
+      schema: {
+        target: { default: 1.0 },
+        yOffset: { default: 0.02 }
+      },
+      init: function () {
+        this.el.addEventListener('model-loaded', () => {
+          const object3D = this.el.getObject3D('mesh');
+          if (!object3D || !window.THREE) return;
+
+          // 元モデルのサイズを取得
+          object3D.updateMatrixWorld(true);
+          let box = new THREE.Box3().setFromObject(object3D);
+          const size = new THREE.Vector3();
+          box.getSize(size);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          if (!maxDim || !Number.isFinite(maxDim)) return;
+
+          // 大きすぎ・小さすぎを自動補正
+          const scale = this.data.target / maxDim;
+          this.el.setAttribute('scale', `${scale} ${scale} ${scale}`);
+
+          // scale反映後に、中心をマーカー中央、足元をマーカー面付近へ移動
+          requestAnimationFrame(() => {
+            object3D.updateMatrixWorld(true);
+            box = new THREE.Box3().setFromObject(object3D);
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+            const current = this.el.getAttribute('position') || { x: 0, y: 0, z: 0 };
+            this.el.setAttribute('position', {
+              x: current.x - center.x,
+              y: current.y - box.min.y + this.data.yOffset,
+              z: current.z - center.z
+            });
+          });
+        });
+      }
+    });
+  }
+
   let currentDinoId = null;
   let visibleDinoIds = new Set();
   let initialized = false;

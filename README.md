@@ -67,3 +67,14 @@ npx serve . -l 3000
 ```
 
 ファイル名は小文字の `ar.html` に統一しています。公開サーバーでは大文字小文字が区別される場合があるため、リンクも小文字に統一してください。
+
+
+## マーカー対応表（2026-06更新）
+
+- pattern-stanp.patt: お試しマーカー
+- pattern-stanp1.patt: プロトケラトプス / protoceratops.glb
+- pattern-stanp2.patt: ラウジャア / ravjaa.glb
+- pattern-stanp3.patt: コリトサウルス / corythosaurus.glb
+- pattern-stanp4.patt: サヴァケファレ / zavacephale.glb
+- pattern-stanp5.patt: ピナコサウルス / raujaa.glb（pinacosaurus名のGLBがないため仮対応）
+- pattern-stanp6.patt: タルボサウルス / torikosaurusu.glb（tarbosaurus名のGLBがないため仮対応）
