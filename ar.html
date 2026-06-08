@@ -49,6 +49,7 @@
       id="ar-scene"
       embedded
       renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
+      gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
       arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
@@ -61,22 +62,24 @@
       </a-marker>
 
       <a-marker id="marker-protoceratops" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true" data-dino-id="protoceratops">
-        <a-entity gltf-model="url(assets/models/protoceratops.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
+        <!-- 認識確認用の土台。モデルが重くても、まずこの青い台が出れば3D表示自体は成功です。 -->
+        <a-cylinder radius="0.55" height="0.04" position="0 0.02 0" color="#2563eb" opacity="0.85"></a-cylinder>
+        <a-entity class="dino-model" gltf-model="url(assets/models/protoceratops.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
       </a-marker>
       <a-marker id="marker-ravjaa" type="pattern" url="assets/markers/pattern-stanp2.patt" emitevents="true" data-dino-id="ravjaa">
-        <a-entity gltf-model="url(assets/models/ravjaa.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
+        <a-entity class="dino-model" gltf-model="url(assets/models/ravjaa.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
       </a-marker>
       <a-marker id="marker-corythosaurus" type="pattern" url="assets/markers/pattern-stanp3.patt" emitevents="true" data-dino-id="corythosaurus">
-        <a-entity gltf-model="url(assets/models/corythosaurus.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
+        <a-entity class="dino-model" gltf-model="url(assets/models/corythosaurus.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
       </a-marker>
       <a-marker id="marker-zavacephale" type="pattern" url="assets/markers/pattern-stanp4.patt" emitevents="true" data-dino-id="zavacephale">
-        <a-entity gltf-model="url(assets/models/zavacephale.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
+        <a-entity class="dino-model" gltf-model="url(assets/models/zavacephale.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
       </a-marker>
       <a-marker id="marker-pinacosaurus" type="pattern" url="assets/markers/pattern-stanp5.patt" emitevents="true" data-dino-id="pinacosaurus">
-        <a-entity gltf-model="url(assets/models/raujaa.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
+        <a-entity class="dino-model" gltf-model="url(assets/models/raujaa.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
       </a-marker>
       <a-marker id="marker-tarbosaurus" type="pattern" url="assets/markers/pattern-stanp6.patt" emitevents="true" data-dino-id="tarbosaurus">
-        <a-entity gltf-model="url(assets/models/torikosaurusu.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
+        <a-entity class="dino-model" gltf-model="url(assets/models/torikosaurusu.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
       </a-marker>
 
       <a-entity camera></a-entity>

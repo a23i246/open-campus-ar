@@ -11,6 +11,12 @@
       },
       init: function () {
         this.el.addEventListener('model-loaded', () => {
+          const dinoId = this.el.closest('a-marker')?.dataset?.dinoId;
+          if (dinoId && typeof findDinosaur === 'function') {
+            const d = findDinosaur(dinoId);
+            const status = document.getElementById('ar-status');
+            if (status && d) status.textContent = `${d.name} の3Dモデルを読み込みました。マーカーにかざしてください。`;
+          }
           const object3D = this.el.getObject3D('mesh');
           if (!object3D || !window.THREE) return;
 
@@ -132,6 +138,18 @@
       marker.addEventListener('markerLost', () => {
         visibleDinoIds.delete(id);
         chooseCurrentDino();
+      });
+    });
+
+
+
+    document.querySelectorAll('.dino-model').forEach((modelEl) => {
+      modelEl.addEventListener('model-error', (event) => {
+        const marker = modelEl.closest('a-marker');
+        const id = marker ? marker.dataset.dinoId : '';
+        const dino = id ? findDinosaur(id) : null;
+        console.error('モデル読み込み失敗:', id, event.detail);
+        setStatus(`${dino ? dino.name : '3Dモデル'} の読み込みに失敗しました。通信状況とキャッシュを確認してください。`);
       });
     });
 

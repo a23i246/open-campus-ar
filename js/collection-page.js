@@ -47,11 +47,12 @@ function openDetail(id) {
   }
 
   if (asset && model) {
-    asset.setAttribute('src', dino.model);
+    // 直接URL指定にして、スマホブラウザでも再読み込みが安定しやすい形にする
     model.removeAttribute('gltf-model');
+    asset.setAttribute('src', dino.model);
     model.setAttribute('scale', dino.collectionScale || '0.7 0.7 0.7');
     model.setAttribute('position', dino.collectionPosition || '0 -0.6 -3');
-    requestAnimationFrame(() => model.setAttribute('gltf-model', '#modal-model-asset'));
+    requestAnimationFrame(() => model.setAttribute('gltf-model', `url(${dino.model})`));
   }
 
   if (modal) {
