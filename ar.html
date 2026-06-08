@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>ARモデル調整 - プロトケラトプス</title>
+  <title>恐竜ARスタンプラリー</title>
 
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://unpkg.com/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
+  <script src="js/dinosaurs.js"></script>
+  <script src="js/collection.js"></script>
 
   <script>
-    // GLBモデルをマーカー中央に置き、見えやすいサイズに自動調整する
     AFRAME.registerComponent('fit-gltf-on-marker', {
       schema: {
-        target: { type: 'number', default: 1.45 },
+        target: { type: 'number', default: 1.2 },
         yOffset: { type: 'number', default: 0.04 }
       },
       init: function () {
@@ -20,13 +21,14 @@
           const mesh = this.el.getObject3D('mesh');
           if (!mesh || !window.THREE) return;
 
-          // 透明背景にして、黒背景ではなくカメラ映像を見せる
           const scene = this.el.sceneEl;
           if (scene && scene.renderer) {
-            scene.renderer.setClearColor(new THREE.Color(0x000000), 0);
+            try {
+              scene.renderer.setClearColor(new THREE.Color(0x000000), 0);
+              scene.renderer.setClearAlpha(0);
+            } catch (e) {}
           }
 
-          // 初期化してから元モデルのサイズと中心を取得
           this.el.object3D.scale.set(1, 1, 1);
           this.el.object3D.position.set(0, 0, 0);
           this.el.object3D.updateMatrixWorld(true);
@@ -47,25 +49,17 @@
             -center.z * scale
           );
           this.el.object3D.updateMatrixWorld(true);
-
-          const status = document.getElementById('status');
-          if (status) {
-            status.textContent = 'プロトケラトプスを読み込みました。マーカー上に出るか確認してください。';
-          }
         });
 
         this.el.addEventListener('model-error', (e) => {
           const status = document.getElementById('status');
-          if (status) status.textContent = 'GLBモデルの読み込みに失敗しました。';
+          if (status) status.textContent = 'GLBモデルの読み込みに失敗しました。ファイル名を確認してください。';
           console.error('GLB model-error:', e);
         });
       }
     });
 
-    // カメラ映像が黒背景に隠れないようにする補正。
-    // 前回の強制補正は Android Chrome で白画面になる可能性があったため、
-    // canvas の実サイズ変更や body の px 固定はしない安全版に戻しています。
-    function keepCameraBackgroundVisible() {
+    function fitCameraToScreen() {
       const scene = document.querySelector('a-scene');
       if (scene && scene.renderer && window.THREE) {
         try {
@@ -86,6 +80,8 @@
       document.body.style.setProperty('background', '#000', 'important');
 
       document.querySelectorAll('video, #arjs-video').forEach((el) => {
+        el.setAttribute('playsinline', '');
+        el.setAttribute('webkit-playsinline', '');
         el.style.setProperty('display', 'block', 'important');
         el.style.setProperty('visibility', 'visible', 'important');
         el.style.setProperty('opacity', '1', 'important');
@@ -95,19 +91,25 @@
         el.style.setProperty('right', '0', 'important');
         el.style.setProperty('bottom', '0', 'important');
         el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
         el.style.setProperty('height', '100dvh', 'important');
+        el.style.setProperty('min-width', '100vw', 'important');
+        el.style.setProperty('min-height', '100dvh', 'important');
         el.style.setProperty('max-width', 'none', 'important');
         el.style.setProperty('max-height', 'none', 'important');
-        el.style.setProperty('object-fit', 'cover', 'important');
+        // Android Chromeで右側に黒帯が出るため、まずは画面全面に伸ばしてcanvasと合わせる。
+        el.style.setProperty('object-fit', 'fill', 'important');
         el.style.setProperty('z-index', '0', 'important');
         el.style.setProperty('transform', 'none', 'important');
         el.style.setProperty('background', '#000', 'important');
+        el.style.setProperty('pointer-events', 'none', 'important');
       });
 
       document.querySelectorAll('a-scene').forEach((el) => {
         el.style.setProperty('position', 'fixed', 'important');
         el.style.setProperty('inset', '0', 'important');
         el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
         el.style.setProperty('height', '100dvh', 'important');
         el.style.setProperty('z-index', '1', 'important');
         el.style.setProperty('background', 'transparent', 'important');
@@ -118,8 +120,13 @@
         el.style.setProperty('position', 'fixed', 'important');
         el.style.setProperty('top', '0', 'important');
         el.style.setProperty('left', '0', 'important');
+        el.style.setProperty('right', '0', 'important');
+        el.style.setProperty('bottom', '0', 'important');
         el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
         el.style.setProperty('height', '100dvh', 'important');
+        el.style.setProperty('min-width', '100vw', 'important');
+        el.style.setProperty('min-height', '100dvh', 'important');
         el.style.setProperty('max-width', 'none', 'important');
         el.style.setProperty('max-height', 'none', 'important');
         el.style.setProperty('z-index', '2', 'important');
@@ -127,16 +134,15 @@
         el.style.setProperty('background', 'transparent', 'important');
         el.style.setProperty('transform', 'none', 'important');
       });
-
-      if (scene && typeof scene.resize === 'function') {
-        try { scene.resize(); } catch (e) {}
-      }
     }
 
     window.addEventListener('load', () => {
-      [100, 300, 700, 1200, 2000, 3500, 6000].forEach(ms => setTimeout(keepCameraBackgroundVisible, ms));
-      const observer = new MutationObserver(() => keepCameraBackgroundVisible());
-      observer.observe(document.body, { childList: true, subtree: true });
+      [50, 100, 300, 700, 1200, 2000, 3500, 6000, 10000].forEach(ms => setTimeout(fitCameraToScreen, ms));
+      setInterval(fitCameraToScreen, 700);
+      const observer = new MutationObserver(() => fitCameraToScreen());
+      observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class', 'width', 'height'] });
+      window.addEventListener('resize', fitCameraToScreen);
+      window.addEventListener('orientationchange', () => setTimeout(fitCameraToScreen, 500));
     });
   </script>
 
@@ -204,15 +210,33 @@
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
-    .actions a {
+    .actions a, .actions button {
       display: inline-block;
       background: #fff;
       color: #111827;
       text-decoration: none;
       padding: 10px 16px;
       border-radius: 999px;
+      font-weight: 800;
+      border: 0;
+      font-size: 14px;
+    }
+
+    .actions button {
+      background: #fff;
+    }
+
+    .actions button:disabled {
+      opacity: 0.55;
+    }
+
+    #collected-count {
+      margin-left: auto;
+      color: #e5e7eb;
+      font-size: 13px;
       font-weight: 800;
     }
 
@@ -221,6 +245,7 @@
       inset: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
+      height: 100dvh !important;
       background: transparent !important;
       z-index: 1 !important;
     }
@@ -232,13 +257,28 @@
       position: fixed !important;
       inset: 0 !important;
       width: 100vw !important;
+      height: 100vh !important;
       height: 100dvh !important;
-      object-fit: cover !important;
+      min-width: 100vw !important;
+      min-height: 100dvh !important;
+      max-width: none !important;
+      max-height: none !important;
+      object-fit: fill !important;
       z-index: 0 !important;
       transform: none !important;
+      background: #000 !important;
     }
 
     canvas, .a-canvas {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      min-width: 100vw !important;
+      min-height: 100dvh !important;
+      max-width: none !important;
+      max-height: none !important;
       background: transparent !important;
       z-index: 2 !important;
       pointer-events: none !important;
@@ -246,17 +286,19 @@
   </style>
 </head>
 <body>
-  <div class="top-help">pattern-stanp1 をかざしてください。プロトケラトプスを表示します。</div>
+  <div class="top-help">マーカーをかざしてください。対応する3Dモデルを表示します。</div>
 
   <div class="panel">
     <div class="title">
-      <span>ARモデル調整</span>
-      <span>プロトケラトプス</span>
+      <span>ARカメラ</span>
+      <span id="current-model-name">待機中</span>
     </div>
-    <div id="status">マーカーを探しています。プロトケラトプスがマーカー上に出るか確認します。</div>
+    <div id="status">マーカーを探しています。マーカー全体が画面に入るようにしてください。</div>
     <div class="actions">
+      <button id="add-collection" disabled>コレクションに追加</button>
       <a href="collection.html">コレクション</a>
       <a href="index.html">トップへ</a>
+      <span id="collected-count">0 / 6</span>
     </div>
   </div>
 
@@ -268,22 +310,60 @@
     gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;"
     arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
 
-    <a-assets timeout="30000">
-      <a-asset-item id="protoceratops-model" src="assets/models/protoceratops.glb"></a-asset-item>
+    <a-assets timeout="60000">
+      <a-asset-item id="model-protoceratops" src="assets/models/protoceratops.glb"></a-asset-item>
+      <a-asset-item id="model-ravjaa" src="assets/models/ravjaa.glb"></a-asset-item>
+      <a-asset-item id="model-corythosaurus" src="assets/models/corythosaurus.glb"></a-asset-item>
+      <a-asset-item id="model-zavacephale" src="assets/models/zavacephale.glb"></a-asset-item>
+      <a-asset-item id="model-pinacosaurus" src="assets/models/raujaa.glb"></a-asset-item>
+      <a-asset-item id="model-tarbosaurus" src="assets/models/torikosaurusu.glb"></a-asset-item>
     </a-assets>
 
-    <a-marker id="test-marker" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true">
+    <a-marker id="marker-protoceratops" data-dino-id="protoceratops" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true">
       <a-entity light="type: ambient; intensity: 1.8"></a-entity>
       <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+      <a-entity position="0 0.02 0" rotation="0 180 0">
+        <a-entity gltf-model="#model-protoceratops" fit-gltf-on-marker="target: 1.45; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+      </a-entity>
+    </a-marker>
 
-      <!-- 見えた赤箱などを外し、プロトケラトプス単体にする -->
-      <a-entity id="protoceratops-holder" position="0 0.02 0" rotation="0 180 0">
-        <a-entity
-          id="protoceratops-entity"
-          gltf-model="#protoceratops-model"
-          fit-gltf-on-marker="target: 1.45; yOffset: 0.05"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 12000">
-        </a-entity>
+    <a-marker id="marker-ravjaa" data-dino-id="ravjaa" type="pattern" url="assets/markers/pattern-stanp2.patt" emitevents="true">
+      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+      <a-entity position="0 0.02 0" rotation="0 180 0">
+        <a-entity gltf-model="#model-ravjaa" fit-gltf-on-marker="target: 1.25; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+      </a-entity>
+    </a-marker>
+
+    <a-marker id="marker-corythosaurus" data-dino-id="corythosaurus" type="pattern" url="assets/markers/pattern-stanp3.patt" emitevents="true">
+      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+      <a-entity position="0 0.02 0" rotation="0 180 0">
+        <a-entity gltf-model="#model-corythosaurus" fit-gltf-on-marker="target: 1.25; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+      </a-entity>
+    </a-marker>
+
+    <a-marker id="marker-zavacephale" data-dino-id="zavacephale" type="pattern" url="assets/markers/pattern-stanp4.patt" emitevents="true">
+      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+      <a-entity position="0 0.02 0" rotation="0 180 0">
+        <a-entity gltf-model="#model-zavacephale" fit-gltf-on-marker="target: 1.25; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+      </a-entity>
+    </a-marker>
+
+    <a-marker id="marker-pinacosaurus" data-dino-id="pinacosaurus" type="pattern" url="assets/markers/pattern-stanp5.patt" emitevents="true">
+      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+      <a-entity position="0 0.02 0" rotation="0 180 0">
+        <a-entity gltf-model="#model-pinacosaurus" fit-gltf-on-marker="target: 1.25; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+      </a-entity>
+    </a-marker>
+
+    <a-marker id="marker-tarbosaurus" data-dino-id="tarbosaurus" type="pattern" url="assets/markers/pattern-stanp6.patt" emitevents="true">
+      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+      <a-entity position="0 0.02 0" rotation="0 180 0">
+        <a-entity gltf-model="#model-tarbosaurus" fit-gltf-on-marker="target: 1.25; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
       </a-entity>
     </a-marker>
 
@@ -292,26 +372,76 @@
 
   <script>
     const statusEl = document.getElementById('status');
+    const nameEl = document.getElementById('current-model-name');
+    const addButton = document.getElementById('add-collection');
+    const countEl = document.getElementById('collected-count');
+    const visibleIds = new Set();
+    let currentId = null;
+
+    function updateCount() {
+      if (!countEl || typeof getCollection !== 'function') return;
+      countEl.textContent = `${getCollection().length} / ${window.DINOSAURS.length}`;
+    }
+
+    function setCurrent(id) {
+      currentId = id;
+      const dino = id && typeof findDinosaur === 'function' ? findDinosaur(id) : null;
+      if (!dino) {
+        if (nameEl) nameEl.textContent = '待機中';
+        if (statusEl) statusEl.textContent = 'マーカーを探しています。マーカー全体が画面に入るようにしてください。';
+        if (addButton) {
+          addButton.disabled = true;
+          addButton.textContent = 'コレクションに追加';
+        }
+        return;
+      }
+
+      if (nameEl) nameEl.textContent = dino.name;
+      if (statusEl) statusEl.textContent = `${dino.name} を認識しました。3Dモデルが見えるか確認してください。`;
+      if (addButton) {
+        addButton.disabled = false;
+        const already = getCollection().includes(id);
+        addButton.textContent = already ? `${dino.name} は追加済み` : `${dino.name} を追加`;
+      }
+      fitCameraToScreen();
+    }
+
+    document.querySelectorAll('a-marker[data-dino-id]').forEach((marker) => {
+      const id = marker.dataset.dinoId;
+      marker.addEventListener('markerFound', () => {
+        visibleIds.add(id);
+        setCurrent(id);
+      });
+      marker.addEventListener('markerLost', () => {
+        visibleIds.delete(id);
+        setCurrent([...visibleIds][0] || null);
+      });
+    });
+
+    if (addButton) {
+      addButton.addEventListener('click', () => {
+        if (!currentId) return;
+        const dino = findDinosaur(currentId);
+        addToCollection(currentId);
+        updateCount();
+        setCurrent(currentId);
+        if (statusEl) statusEl.textContent = `${dino.name} をコレクションに追加しました。`;
+      });
+    }
+
     const sceneEl = document.querySelector('a-scene');
     if (sceneEl) {
       sceneEl.addEventListener('renderstart', () => {
-        keepCameraBackgroundVisible();
-        setTimeout(keepCameraBackgroundVisible, 500);
+        fitCameraToScreen();
+        setTimeout(fitCameraToScreen, 500);
       });
     }
-    const marker = document.getElementById('test-marker');
-
-    marker.addEventListener('markerFound', () => {
-      statusEl.textContent = 'pattern-stanp1 を認識しました。プロトケラトプスが見えるか確認してください。';
-    });
-
-    marker.addEventListener('markerLost', () => {
-      statusEl.textContent = 'マーカーを見失いました。もう一度 pattern-stanp1 全体を画面に入れてください。';
-    });
 
     window.addEventListener('error', (e) => {
-      statusEl.textContent = 'エラー: ' + (e.message || '不明なエラー');
+      if (statusEl) statusEl.textContent = 'エラー: ' + (e.message || '不明なエラー');
     });
+
+    updateCount();
   </script>
 </body>
 </html>
