@@ -3,89 +3,140 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>ARカメラ - 恐竜ARスタンプラリー</title>
+  <title>ARモデル調整 - プロトケラトプス</title>
 
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://unpkg.com/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
-  <script src="js/dinosaurs.js"></script>
-  <script src="js/collection.js"></script>
-  <script src="js/ar-main.js"></script>
+
+  <script>
+    // GLBモデルをマーカー中央に置き、見えやすいサイズに自動調整する
+    AFRAME.registerComponent('fit-gltf-on-marker', {
+      schema: {
+        target: { type: 'number', default: 1.45 },
+        yOffset: { type: 'number', default: 0.04 }
+      },
+      init: function () {
+        this.el.addEventListener('model-loaded', () => {
+          const mesh = this.el.getObject3D('mesh');
+          if (!mesh || !window.THREE) return;
+
+          // 透明背景にして、黒背景ではなくカメラ映像を見せる
+          const scene = this.el.sceneEl;
+          if (scene && scene.renderer) {
+            scene.renderer.setClearColor(new THREE.Color(0x000000), 0);
+          }
+
+          // 初期化してから元モデルのサイズと中心を取得
+          this.el.object3D.scale.set(1, 1, 1);
+          this.el.object3D.position.set(0, 0, 0);
+          this.el.object3D.updateMatrixWorld(true);
+
+          const box = new THREE.Box3().setFromObject(mesh);
+          const size = new THREE.Vector3();
+          const center = new THREE.Vector3();
+          box.getSize(size);
+          box.getCenter(center);
+
+          const maxSize = Math.max(size.x, size.y, size.z);
+          const scale = maxSize > 0 ? this.data.target / maxSize : 1;
+
+          this.el.object3D.scale.set(scale, scale, scale);
+          this.el.object3D.position.set(
+            -center.x * scale,
+            -box.min.y * scale + this.data.yOffset,
+            -center.z * scale
+          );
+          this.el.object3D.updateMatrixWorld(true);
+
+          const status = document.getElementById('status');
+          if (status) {
+            status.textContent = 'プロトケラトプスを小さめに読み込みました。マーカー上に出るか確認してください。';
+          }
+        });
+
+        this.el.addEventListener('model-error', (e) => {
+          const status = document.getElementById('status');
+          if (status) status.textContent = 'GLBモデルの読み込みに失敗しました。';
+          console.error('GLB model-error:', e);
+        });
+      }
+    });
+
+    // カメラ映像が黒背景に隠れないようにする補正。
+    // AR.jsは video を z-index:-2 付近で生成することがあり、
+    // Android Chromeではcanvasだけ見えてカメラ背景が黒になる場合がある。
+    function keepCameraBackgroundVisible() {
+      const scene = document.querySelector('a-scene');
+      if (scene && scene.renderer && window.THREE) {
+        try {
+          scene.renderer.setClearColor(new THREE.Color(0x000000), 0);
+          scene.renderer.setClearAlpha(0);
+          scene.renderer.autoClear = true;
+          if (scene.object3D) scene.object3D.background = null;
+        } catch (e) {}
+      }
+
+      document.documentElement.style.background = 'transparent';
+      document.body.style.background = 'transparent';
+
+      document.querySelectorAll('video, #arjs-video').forEach((el) => {
+        el.style.setProperty('display', 'block', 'important');
+        el.style.setProperty('visibility', 'visible', 'important');
+        el.style.setProperty('opacity', '1', 'important');
+        el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('top', '0', 'important');
+        el.style.setProperty('left', '0', 'important');
+        el.style.setProperty('right', '0', 'important');
+        el.style.setProperty('bottom', '0', 'important');
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100dvh', 'important');
+        el.style.setProperty('max-width', 'none', 'important');
+        el.style.setProperty('max-height', 'none', 'important');
+        el.style.setProperty('object-fit', 'cover', 'important');
+        el.style.setProperty('z-index', '0', 'important');
+        el.style.setProperty('transform', 'none', 'important');
+      });
+
+      document.querySelectorAll('a-scene, canvas, .a-canvas').forEach((el) => {
+        el.style.setProperty('background', 'transparent', 'important');
+      });
+
+      document.querySelectorAll('a-scene').forEach((el) => {
+        el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('inset', '0', 'important');
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100dvh', 'important');
+        el.style.setProperty('z-index', '1', 'important');
+      });
+
+      document.querySelectorAll('canvas, .a-canvas').forEach((el) => {
+        el.style.setProperty('position', 'fixed', 'important');
+        el.style.setProperty('top', '0', 'important');
+        el.style.setProperty('left', '0', 'important');
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100dvh', 'important');
+        el.style.setProperty('z-index', '2', 'important');
+        el.style.setProperty('pointer-events', 'none', 'important');
+      });
+    }
+
+    window.addEventListener('load', () => {
+      [100, 300, 700, 1200, 2000, 3500, 6000].forEach(ms => setTimeout(keepCameraBackgroundVisible, ms));
+      const observer = new MutationObserver(() => keepCameraBackgroundVisible());
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  </script>
 
   <style>
-    * { box-sizing: border-box; }
-
-    html,
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      overflow: hidden !important;
-      overscroll-behavior: none;
-      background: #000 !important;
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      touch-action: none;
-      -webkit-text-size-adjust: 100%;
     }
-
-    body {
-      position: fixed !important;
-      inset: 0 !important;
-    }
-
-    #ar-root {
-      position: fixed !important;
-      inset: 0 !important;
-      width: 100vw !important;
-      height: 100dvh !important;
-      overflow: hidden !important;
-      background: #000 !important;
-    }
-
-    a-scene,
-    .a-canvas,
-    canvas,
-    video,
-    #arjs-video {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100dvh !important;
-      max-width: none !important;
-      max-height: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      transform: none !important;
-    }
-
-    a-scene {
-      z-index: 1 !important;
-      background: transparent !important;
-      overflow: hidden !important;
-    }
-
-    video,
-    #arjs-video {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      object-fit: cover !important;
-      z-index: 0 !important;
-      pointer-events: none !important;
-      background: #000 !important;
-    }
-
-    canvas,
-    .a-canvas {
-      z-index: 2 !important;
-      pointer-events: none !important;
-      background: transparent !important;
-    }
-
-    .a-loader-title,
-    .a-enter-vr,
-    .a-enter-ar { display: none !important; }
 
     .top-help {
       position: fixed;
@@ -93,17 +144,16 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 9999;
-      width: calc(100vw - 48px);
-      max-width: 560px;
+      background: rgba(255,255,255,0.94);
+      color: #111827;
       padding: 10px 16px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.94);
-      color: #111827;
-      font-size: 14px;
       font-weight: 800;
-      line-height: 1.45;
+      font-size: 14px;
       text-align: center;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      width: calc(100% - 48px);
+      max-width: 560px;
+      box-sizing: border-box;
     }
 
     .panel {
@@ -112,11 +162,12 @@
       right: 16px;
       bottom: calc(16px + env(safe-area-inset-bottom));
       z-index: 9999;
-      padding: 16px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      border-radius: 20px;
       background: rgba(15, 23, 42, 0.92);
       color: #fff;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      border-radius: 20px;
+      padding: 16px;
+      box-sizing: border-box;
       backdrop-filter: blur(10px);
     }
 
@@ -124,110 +175,130 @@
       display: flex;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 8px;
-      font-size: 18px;
       font-weight: 800;
+      font-size: 18px;
+      margin-bottom: 8px;
     }
 
-    #ar-status {
-      margin-bottom: 12px;
-      color: #e5e7eb;
+    #status {
       font-size: 15px;
       line-height: 1.6;
+      color: #e5e7eb;
+      margin-bottom: 12px;
     }
 
     .actions {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .actions a,
-    .actions button {
+    .actions a {
       display: inline-block;
-      border: 0;
-      border-radius: 999px;
-      padding: 10px 16px;
       background: #fff;
       color: #111827;
-      font-size: 14px;
-      font-weight: 800;
       text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 800;
     }
 
-    .actions button:disabled { opacity: 0.55; }
-    .count { opacity: 0.9; font-size: 13px; }
+    a-scene {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: transparent !important;
+      z-index: 1 !important;
+    }
+
+    video, #arjs-video {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100dvh !important;
+      object-fit: cover !important;
+      z-index: 0 !important;
+      transform: none !important;
+    }
+
+    canvas, .a-canvas {
+      background: transparent !important;
+      z-index: 2 !important;
+      pointer-events: none !important;
+    }
   </style>
 </head>
 <body>
-  <div id="top-help" class="top-help">マーカーをかざしてください。対応する3Dモデルを表示します。</div>
+  <div class="top-help">pattern-stanp1 をかざしてください。小さめのプロトケラトプスを表示します。</div>
 
-  <div id="ar-root">
-    <a-scene
-      id="ar-scene"
-      embedded
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
-      renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true; colorManagement: true"
-      gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;"
-      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
-
-      <!-- GLBを最初に全部読ませるとスマホで重くなるため、モデルはマーカー認識後にJSで読み込みます -->
-      <a-assets timeout="60000"></a-assets>
-
-      <a-marker id="marker-protoceratops" data-dino-id="protoceratops" data-target="1.45" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true">
-        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity class="model-holder" position="0 0.02 0" rotation="0 180 0"></a-entity>
-      </a-marker>
-
-      <a-marker id="marker-ravjaa" data-dino-id="ravjaa" data-target="1.30" type="pattern" url="assets/markers/pattern-stanp2.patt" emitevents="true">
-        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity class="model-holder" position="0 0.02 0" rotation="0 180 0"></a-entity>
-      </a-marker>
-
-      <a-marker id="marker-corythosaurus" data-dino-id="corythosaurus" data-target="1.35" type="pattern" url="assets/markers/pattern-stanp3.patt" emitevents="true">
-        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity class="model-holder" position="0 0.02 0" rotation="0 180 0"></a-entity>
-      </a-marker>
-
-      <a-marker id="marker-zavacephale" data-dino-id="zavacephale" data-target="1.30" type="pattern" url="assets/markers/pattern-stanp4.patt" emitevents="true">
-        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity class="model-holder" position="0 0.02 0" rotation="0 180 0"></a-entity>
-      </a-marker>
-
-      <a-marker id="marker-pinacosaurus" data-dino-id="pinacosaurus" data-target="1.25" type="pattern" url="assets/markers/pattern-stanp5.patt" emitevents="true">
-        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity class="model-holder" position="0 0.02 0" rotation="0 180 0"></a-entity>
-      </a-marker>
-
-      <a-marker id="marker-tarbosaurus" data-dino-id="tarbosaurus" data-target="1.35" type="pattern" url="assets/markers/pattern-stanp6.patt" emitevents="true">
-        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity class="model-holder" position="0 0.02 0" rotation="0 180 0"></a-entity>
-      </a-marker>
-
-      <a-entity camera></a-entity>
-    </a-scene>
-  </div>
-
-  <div id="ar-ui" class="panel">
+  <div class="panel">
     <div class="title">
-      <span>ARカメラ</span>
-      <span id="current-model-name">待機中</span>
+      <span>ARモデル調整</span>
+      <span>プロトケラトプス</span>
     </div>
-    <div id="ar-status">マーカーを探しています。マーカー全体が画面に入るようにしてください。</div>
+    <div id="status">マーカーを探しています。小さめのプロトケラトプスがマーカー上に出るか確認します。</div>
     <div class="actions">
-      <button id="add-collection" type="button" disabled>コレクションに追加</button>
       <a href="collection.html">コレクション</a>
       <a href="index.html">トップへ</a>
-      <span class="count" id="collected-count">0 / 6</span>
     </div>
   </div>
+
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true; colorManagement: true"
+    gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;"
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
+
+    <a-assets timeout="30000">
+      <a-asset-item id="protoceratops-model" src="assets/models/protoceratops.glb"></a-asset-item>
+    </a-assets>
+
+    <a-marker id="test-marker" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true">
+      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+
+      <!-- 見えた赤箱などを外し、プロトケラトプス単体にする -->
+      <a-entity id="protoceratops-holder" position="0 0.02 0" rotation="0 180 0">
+        <a-entity
+          id="protoceratops-entity"
+          gltf-model="#protoceratops-model"
+          fit-gltf-on-marker="target: 1.45; yOffset: 0.05"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 12000">
+        </a-entity>
+      </a-entity>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const sceneEl = document.querySelector('a-scene');
+    if (sceneEl) {
+      sceneEl.addEventListener('renderstart', () => {
+        keepCameraBackgroundVisible();
+        setTimeout(keepCameraBackgroundVisible, 500);
+      });
+    }
+    const marker = document.getElementById('test-marker');
+
+    marker.addEventListener('markerFound', () => {
+      statusEl.textContent = 'pattern-stanp1 を認識しました。小さめのプロトケラトプスが見えるか確認してください。';
+    });
+
+    marker.addEventListener('markerLost', () => {
+      statusEl.textContent = 'マーカーを見失いました。もう一度 pattern-stanp1 全体を画面に入れてください。';
+    });
+
+    window.addEventListener('error', (e) => {
+      statusEl.textContent = 'エラー: ' + (e.message || '不明なエラー');
+    });
+  </script>
 </body>
 </html>
