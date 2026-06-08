@@ -3,11 +3,62 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>AR最小テスト - pattern-stanp1</title>
+  <title>ARモデルテスト - プロトケラトプス</title>
 
   <!-- AR.jsで比較的使われている安定寄りの組み合わせ -->
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://unpkg.com/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
+
+
+
+  <script>
+    // GLBの大きさ・中心位置がバラバラでも、マーカー中央に収まるようにするテスト用コンポーネント
+    AFRAME.registerComponent('fit-gltf-on-marker', {
+      schema: { target: { type: 'number', default: 1.0 } },
+      init: function () {
+        this.el.addEventListener('model-loaded', () => {
+          const mesh = this.el.getObject3D('mesh');
+          if (!mesh || !window.THREE) return;
+
+          // いったん初期化してからサイズ計算
+          this.el.object3D.scale.set(1, 1, 1);
+          this.el.object3D.position.set(0, 0, 0);
+          this.el.object3D.updateMatrixWorld(true);
+
+          const box = new THREE.Box3().setFromObject(mesh);
+          const size = new THREE.Vector3();
+          const center = new THREE.Vector3();
+          box.getSize(size);
+          box.getCenter(center);
+
+          const maxSize = Math.max(size.x, size.y, size.z);
+          const scale = maxSize > 0 ? this.data.target / maxSize : 1;
+
+          this.el.object3D.scale.set(scale, scale, scale);
+          // 中心をマーカー中央へ、足元をマーカー面より少し上へ
+          this.el.object3D.position.set(
+            -center.x * scale,
+            -box.min.y * scale + 0.08,
+            -center.z * scale
+          );
+          this.el.object3D.updateMatrixWorld(true);
+
+          const status = document.getElementById('status');
+          if (status) {
+            status.textContent = 'プロトケラトプスGLBを読み込みました。赤い箱の近くに恐竜が出ているか確認してください。';
+          }
+        });
+
+        this.el.addEventListener('model-error', (e) => {
+          const status = document.getElementById('status');
+          if (status) {
+            status.textContent = 'GLBモデルの読み込みに失敗しました。赤い箱だけ出ている場合はモデル読み込み問題です。';
+          }
+          console.error('GLB model-error:', e);
+        });
+      }
+    });
+  </script>
 
   <style>
     html, body {
@@ -95,14 +146,14 @@
   </style>
 </head>
 <body>
-  <div class="top-help">pattern-stanp1 をかざしてください。赤い箱が出れば3D描画成功です。</div>
+  <div class="top-help">pattern-stanp1 をかざしてください。赤い箱に加えてプロトケラトプスが出るか確認します。</div>
 
   <div class="panel">
     <div class="title">
-      <span>AR最小テスト</span>
-      <span>pattern-stanp1</span>
+      <span>ARモデルテスト</span>
+      <span>プロトケラトプス</span>
     </div>
-    <div id="status">マーカーを探しています。カメラ許可が出たら許可してください。</div>
+    <div id="status">マーカーを探しています。赤い箱などに加えて、プロトケラトプスGLBが出るか確認します。</div>
     <div class="actions">
       <a href="collection.html">コレクション</a>
       <a href="index.html">トップへ</a>
@@ -114,7 +165,12 @@
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
+    gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;"
     arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
+
+    <a-assets timeout="30000">
+      <a-asset-item id="protoceratops-model" src="assets/models/protoceratops.glb"></a-asset-item>
+    </a-assets>
 
     <a-marker id="test-marker" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true">
       <!-- まずはGLBなし。絶対に見えやすい基本図形だけ。 -->
@@ -139,6 +195,16 @@
         radius="0.25"
         color="#22c55e">
       </a-sphere>
+
+      <!-- ここからGLBモデルテスト。赤箱などは残し、GLBだけ失敗しても切り分けできるようにする。 -->
+      <a-entity id="protoceratops-holder" position="0 0.08 0" rotation="0 0 0">
+        <a-entity
+          id="protoceratops-entity"
+          gltf-model="#protoceratops-model"
+          fit-gltf-on-marker="target: 1.1"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 9000">
+        </a-entity>
+      </a-entity>
     </a-marker>
 
     <a-entity camera></a-entity>
@@ -149,7 +215,7 @@
     const marker = document.getElementById('test-marker');
 
     marker.addEventListener('markerFound', () => {
-      statusEl.textContent = 'pattern-stanp1 を認識しました。赤い箱・青い土台・緑の球が出ているか確認してください。';
+      statusEl.textContent = 'pattern-stanp1 を認識しました。赤い箱・青い土台・緑の球に加えて、プロトケラトプスが出るか確認してください。';
     });
 
     marker.addEventListener('markerLost', () => {
