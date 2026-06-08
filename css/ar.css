@@ -1,13 +1,221 @@
-html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-a-scene { width: 100vw !important; height: 100vh !important; }
-.ar-ui { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; padding: 14px; pointer-events: none; }
-.ar-panel { pointer-events: auto; width: min(720px, calc(100% - 16px)); margin: 0 auto; background: rgba(17, 24, 39, .88); color: white; border: 1px solid rgba(255,255,255,.18); border-radius: 20px; padding: 14px; backdrop-filter: blur(10px); box-shadow: 0 20px 55px rgba(0,0,0,.35); }
-.ar-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 800; }
-.ar-status { margin-top: 8px; color: #d1d5db; font-size: 14px; line-height: 1.6; }
-.ar-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-.ar-actions button, .ar-actions a { min-height: 42px; padding: 10px 14px; border-radius: 999px; border: 0; font-weight: 800; text-decoration: none; }
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #000;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
+
+.start-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #111827 0%, #1e293b 55%, #334155 100%);
+  color: #111827;
+}
+
+.start-card {
+  width: min(440px, 100%);
+  padding: 26px 22px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 24px 70px rgba(0,0,0,.35);
+  text-align: center;
+}
+
+.start-card h1 {
+  margin: 0 0 10px;
+  font-size: 28px;
+}
+
+.start-card p {
+  margin: 0 0 18px;
+  color: #475569;
+  line-height: 1.7;
+}
+
+#start-ar-button {
+  width: 100%;
+  min-height: 54px;
+  border: 0;
+  border-radius: 999px;
+  background: #22c55e;
+  color: #052e16;
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 14px 30px rgba(34,197,94,.28);
+}
+
+.start-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.start-links a {
+  color: #111827;
+  font-weight: 800;
+  text-decoration: none;
+  background: #e5e7eb;
+  border-radius: 999px;
+  padding: 10px 14px;
+}
+
+.start-card .small-note {
+  margin-top: 14px;
+  margin-bottom: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.ar-root,
+#ar-scene,
+a-scene {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+  background: #000 !important;
+}
+
+/* AR.js / A-Frame が自動生成する video と canvas を強制的に画面へ合わせる */
+video,
+canvas,
+.a-canvas,
+body > video,
+body > canvas,
+#arjs-video,
+#arjs-video video {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+video,
+body > video,
+#arjs-video,
+#arjs-video video {
+  object-fit: cover !important;
+  z-index: 0 !important;
+}
+
+canvas,
+.a-canvas,
+body > canvas {
+  z-index: 1 !important;
+}
+
+.top-help {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  left: 10px;
+  right: 10px;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.top-help span {
+  display: inline-block;
+  max-width: min(720px, 100%);
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.9);
+  color: #111827;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+}
+
+.ar-ui {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: max(0px, env(safe-area-inset-bottom));
+  z-index: 10000;
+  padding: 10px;
+  pointer-events: none;
+}
+
+.ar-panel {
+  pointer-events: auto;
+  width: min(720px, 100%);
+  margin: 0 auto;
+  background: rgba(17, 24, 39, .9);
+  color: white;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 18px;
+  padding: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 55px rgba(0,0,0,.35);
+}
+
+.ar-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+}
+
+.ar-status {
+  margin-top: 7px;
+  color: #d1d5db;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.ar-actions button,
+.ar-actions a {
+  min-height: 40px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 0;
+  font-size: 14px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
 .ar-actions button { background: #22c55e; color: #052e16; }
 .ar-actions button:disabled { background: #64748b; color: #e5e7eb; }
 .ar-actions a { background: white; color: #111827; }
-.top-help { position: fixed; top: 10px; left: 10px; right: 10px; z-index: 9999; display: flex; justify-content: center; pointer-events: none; }
-.top-help span { display: inline-block; max-width: min(720px, 100%); padding: 10px 14px; border-radius: 999px; background: rgba(255,255,255,.88); color: #111827; font-weight: 800; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+
+@media (max-height: 620px) {
+  .top-help span { font-size: 12px; padding: 7px 10px; }
+  .ar-ui { padding: 6px; }
+  .ar-panel { padding: 9px; border-radius: 14px; }
+  .ar-status { font-size: 12px; line-height: 1.35; }
+  .ar-actions { margin-top: 7px; gap: 6px; }
+  .ar-actions button,
+  .ar-actions a { min-height: 34px; padding: 7px 10px; font-size: 13px; }
+}

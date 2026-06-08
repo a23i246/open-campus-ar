@@ -2,56 +2,34 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>ARカメラ - 恐竜ARスタンプラリー</title>
   <link rel="stylesheet" href="css/ar.css">
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <script src="js/dinosaurs.js"></script>
   <script src="js/collection.js"></script>
-  <script src="js/ar-main.js"></script>
+  <script src="js/ar-main.js" defer></script>
 </head>
 <body>
-  <div class="top-help"><span>マーカー全体が画面に入るようにかざしてください</span></div>
+  <div id="start-screen" class="start-screen">
+    <div class="start-card">
+      <h1>ARカメラ</h1>
+      <p>カメラを起動して、マーカー全体が画面に入るようにかざしてください。</p>
+      <button id="start-ar-button" type="button">カメラを起動する</button>
+      <div class="start-links">
+        <a href="collection.html">コレクションを見る</a>
+        <a href="index.html">トップへ戻る</a>
+      </div>
+      <p class="small-note">カメラ許可が表示されたら「許可」を押してください。</p>
+    </div>
+  </div>
 
-  <a-scene
-    id="ar-scene"
-    embedded
-    renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: true"
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+  <div id="ar-root" class="ar-root" aria-hidden="true"></div>
 
-    <a-assets id="model-assets" timeout="30000"></a-assets>
+  <div id="top-help" class="top-help" hidden><span>マーカー全体が画面に入るようにかざしてください</span></div>
 
-    <a-marker id="trial-marker" type="pattern" url="assets/markers/pattern-stanp.patt" emitevents="true" data-trial="true">
-      <a-box position="0 0.5 0" depth="0.8" height="0.8" width="0.8" color="#22c55e" rotation="0 45 0" animation="property: rotation; to: 0 405 0; loop: true; dur: 5000"></a-box>
-      <a-text value="OK" position="0 1.25 0" align="center" color="#111827" width="4" rotation="-90 0 0"></a-text>
-    </a-marker>
-
-    <a-marker id="marker-raujaa" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true" data-dino-id="raujaa">
-      <a-entity gltf-model="url(assets/models/raujaa.glb)" position="0 0 0" scale="0.35 0.35 0.35" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
-    </a-marker>
-    <a-marker id="marker-torikosaurusu" type="pattern" url="assets/markers/pattern-stanp2.patt" emitevents="true" data-dino-id="torikosaurusu">
-      <a-entity gltf-model="url(assets/models/torikosaurusu.glb)" position="0 0 0" scale="0.35 0.35 0.35" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
-    </a-marker>
-    <a-marker id="marker-corythosaurus" type="pattern" url="assets/markers/pattern-stanp3.patt" emitevents="true" data-dino-id="corythosaurus">
-      <a-entity gltf-model="url(assets/models/corythosaurus.glb)" position="0 0 0" scale="0.35 0.35 0.35" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
-    </a-marker>
-    <a-marker id="marker-zavacephale" type="pattern" url="assets/markers/pattern-stanp4.patt" emitevents="true" data-dino-id="zavacephale">
-      <a-entity gltf-model="url(assets/models/zavacephale.glb)" position="0 0 0" scale="0.22 0.22 0.22" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
-    </a-marker>
-    <a-marker id="marker-protoceratops" type="pattern" url="assets/markers/pattern-stanp5.patt" emitevents="true" data-dino-id="protoceratops">
-      <a-entity gltf-model="url(assets/models/protoceratops.glb)" position="0 0 0" scale="0.22 0.22 0.22" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
-    </a-marker>
-    <a-marker id="marker-ravjaa" type="pattern" url="assets/markers/pattern-stanp6.patt" emitevents="true" data-dino-id="ravjaa">
-      <a-entity gltf-model="url(assets/models/ravjaa.glb)" position="0 0 0" scale="0.22 0.22 0.22" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
-    </a-marker>
-
-    <a-entity camera></a-entity>
-  </a-scene>
-
-  <div class="ar-ui">
+  <div id="ar-ui" class="ar-ui" hidden>
     <div class="ar-panel">
       <div class="ar-title">
         <span>ARカメラ</span>
@@ -65,5 +43,44 @@
       </div>
     </div>
   </div>
+
+  <template id="ar-scene-template">
+    <a-scene
+      id="ar-scene"
+      embedded
+      renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
+
+      <a-assets id="model-assets" timeout="30000"></a-assets>
+
+      <a-marker id="trial-marker" type="pattern" url="assets/markers/pattern-stanp.patt" emitevents="true" data-trial="true">
+        <a-box position="0 0.5 0" depth="0.8" height="0.8" width="0.8" color="#22c55e" rotation="0 45 0" animation="property: rotation; to: 0 405 0; loop: true; dur: 5000"></a-box>
+        <a-text value="OK" position="0 1.25 0" align="center" color="#111827" width="4" rotation="-90 0 0"></a-text>
+      </a-marker>
+
+      <a-marker id="marker-raujaa" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true" data-dino-id="raujaa">
+        <a-entity gltf-model="url(assets/models/raujaa.glb)" position="0 0 0" scale="0.35 0.35 0.35" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
+      </a-marker>
+      <a-marker id="marker-torikosaurusu" type="pattern" url="assets/markers/pattern-stanp2.patt" emitevents="true" data-dino-id="torikosaurusu">
+        <a-entity gltf-model="url(assets/models/torikosaurusu.glb)" position="0 0 0" scale="0.35 0.35 0.35" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
+      </a-marker>
+      <a-marker id="marker-corythosaurus" type="pattern" url="assets/markers/pattern-stanp3.patt" emitevents="true" data-dino-id="corythosaurus">
+        <a-entity gltf-model="url(assets/models/corythosaurus.glb)" position="0 0 0" scale="0.35 0.35 0.35" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
+      </a-marker>
+      <a-marker id="marker-zavacephale" type="pattern" url="assets/markers/pattern-stanp4.patt" emitevents="true" data-dino-id="zavacephale">
+        <a-entity gltf-model="url(assets/models/zavacephale.glb)" position="0 0 0" scale="0.22 0.22 0.22" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
+      </a-marker>
+      <a-marker id="marker-protoceratops" type="pattern" url="assets/markers/pattern-stanp5.patt" emitevents="true" data-dino-id="protoceratops">
+        <a-entity gltf-model="url(assets/models/protoceratops.glb)" position="0 0 0" scale="0.22 0.22 0.22" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
+      </a-marker>
+      <a-marker id="marker-ravjaa" type="pattern" url="assets/markers/pattern-stanp6.patt" emitevents="true" data-dino-id="ravjaa">
+        <a-entity gltf-model="url(assets/models/ravjaa.glb)" position="0 0 0" scale="0.22 0.22 0.22" rotation="-90 0 0" animation="property: rotation; to: -90 360 0; loop: true; dur: 9000"></a-entity>
+      </a-marker>
+
+      <a-entity camera></a-entity>
+    </a-scene>
+  </template>
 </body>
 </html>

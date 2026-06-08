@@ -1,6 +1,7 @@
 (function () {
   let currentDinoId = null;
   let visibleDinoIds = new Set();
+  let initialized = false;
 
   function updateCount() {
     const countEl = document.getElementById('collected-count');
@@ -38,7 +39,42 @@
     updateButton();
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
+  function forceArLayout() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    document.documentElement.style.width = `${width}px`;
+    document.documentElement.style.height = `${height}px`;
+    document.body.style.width = `${width}px`;
+    document.body.style.height = `${height}px`;
+
+    const targets = document.querySelectorAll('a-scene, .a-canvas, canvas, video');
+    targets.forEach((el) => {
+      el.style.position = 'fixed';
+      el.style.left = '0';
+      el.style.top = '0';
+      el.style.width = `${width}px`;
+      el.style.height = `${height}px`;
+      el.style.maxWidth = 'none';
+      el.style.maxHeight = 'none';
+      el.style.margin = '0';
+      el.style.transform = 'none';
+      if (el.tagName.toLowerCase() === 'video') {
+        el.style.objectFit = 'cover';
+      }
+    });
+
+    const scene = document.querySelector('a-scene');
+    if (scene && scene.resize) {
+      try { scene.resize(); } catch (e) {}
+    }
+    window.dispatchEvent(new Event('resize'));
+  }
+
+  function initMarkerEvents() {
+    if (initialized) return;
+    initialized = true;
+
     updateCount();
     updateButton();
 
@@ -76,8 +112,45 @@
       });
     }
 
-    window.addEventListener('orientationchange', () => {
-      setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
+    setStatus('マーカーを探しています。マーカー全体が画面に入るようにしてください。');
+  }
+
+  function startAR() {
+    const root = document.getElementById('ar-root');
+    const template = document.getElementById('ar-scene-template');
+    const startScreen = document.getElementById('start-screen');
+    const topHelp = document.getElementById('top-help');
+    const arUi = document.getElementById('ar-ui');
+
+    if (!root || !template) return;
+
+    if (!document.getElementById('ar-scene')) {
+      root.appendChild(template.content.cloneNode(true));
+    }
+
+    root.setAttribute('aria-hidden', 'false');
+    if (topHelp) topHelp.hidden = false;
+    if (arUi) arUi.hidden = false;
+    if (startScreen) startScreen.style.display = 'none';
+
+    setTimeout(initMarkerEvents, 100);
+
+    // AR.js が video/canvas を後から追加するため、数回補正する
+    [100, 300, 700, 1200, 2000, 3500].forEach((ms) => {
+      setTimeout(forceArLayout, ms);
     });
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const startButton = document.getElementById('start-ar-button');
+    if (startButton) {
+      startButton.addEventListener('click', startAR, { once: true });
+    }
+  });
+
+  window.addEventListener('resize', () => setTimeout(forceArLayout, 100));
+  window.addEventListener('orientationchange', () => {
+    setTimeout(forceArLayout, 300);
+    setTimeout(forceArLayout, 900);
   });
 })();
