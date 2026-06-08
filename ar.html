@@ -56,14 +56,17 @@
 
       <a-assets id="model-assets" timeout="30000"></a-assets>
 
-      <a-marker id="trial-marker" type="pattern" url="assets/markers/pattern-stanp.patt" emitevents="true" data-trial="true">
-        <a-box position="0 0.5 0" depth="0.8" height="0.8" width="0.8" color="#22c55e" rotation="0 45 0" animation="property: rotation; to: 0 405 0; loop: true; dur: 5000"></a-box>
-        <a-text value="OK" position="0 1.25 0" align="center" color="#111827" width="4" rotation="-90 0 0"></a-text>
-      </a-marker>
+      <!--
+        pattern-stanp.patt はお試し用ファイルとして assets/markers に残しています。
+        ただし現在の pattern-stanp.patt と pattern-stanp1.patt が同一内容のため、
+        同時に a-marker として読み込むと pattern-stanp1 が「お試しマーカー」として認識されます。
+        そのため、AR画面ではお試しマーカーは読み込まず、pattern-stanp1 をプロトケラトプス専用にしています。
+      -->
 
       <a-marker id="marker-protoceratops" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true" data-dino-id="protoceratops">
-        <!-- 認識確認用の土台。モデルが重くても、まずこの青い台が出れば3D表示自体は成功です。 -->
-        <a-cylinder radius="0.55" height="0.04" position="0 0.02 0" color="#2563eb" opacity="0.85"></a-cylinder>
+        <!-- 認識確認用。モデルが重くても、まず青い土台と黄色の箱が出れば3D表示自体は成功です。 -->
+        <a-cylinder radius="0.60" height="0.06" position="0 0.03 0" color="#2563eb" opacity="0.90"></a-cylinder>
+        <a-box position="0 0.35 0" depth="0.35" height="0.35" width="0.35" color="#facc15" rotation="0 45 0" animation="property: rotation; to: 0 405 0; loop: true; dur: 5000"></a-box>
         <a-entity class="dino-model" gltf-model="url(assets/models/protoceratops.glb)" position="0 0 0" rotation="0 0 0" fit-on-marker="target: 1.0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
       </a-marker>
       <a-marker id="marker-ravjaa" type="pattern" url="assets/markers/pattern-stanp2.patt" emitevents="true" data-dino-id="ravjaa">

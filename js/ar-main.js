@@ -152,16 +152,8 @@
         setStatus(`${dino ? dino.name : '3Dモデル'} の読み込みに失敗しました。通信状況とキャッシュを確認してください。`);
       });
     });
-
-    const trial = document.getElementById('trial-marker');
-    if (trial) {
-      trial.addEventListener('markerFound', () => {
-        if (!currentDinoId) setStatus('お試しマーカーを認識しました。カメラは正常に動いています。');
-      });
-      trial.addEventListener('markerLost', () => {
-        if (!currentDinoId) setStatus('マーカーを探しています。マーカー全体が画面に入るようにしてください。');
-      });
-    }
+    // pattern-stanp と pattern-stanp1 が同一パターンのため、
+    // お試しマーカーはAR画面では読み込まない方針に変更しました。
 
     const addButton = document.getElementById('add-collection');
     if (addButton) {
