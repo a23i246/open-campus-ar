@@ -3,61 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>ARモデル調整</title>
+  <title>ARカメラ - 恐竜ARスタンプラリー</title>
 
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://unpkg.com/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
-
-  <script>
-    // ここにマーカーとモデルを追加していく。
-    // markerUrl と modelUrl のファイルが存在しないものは自動でスキップします。
-    window.AR_MODELS = [
-      {
-        id: 'stanp1',
-        name: 'プロトケラトプス',
-        markerName: 'pattern-stanp1',
-        markerUrl: 'assets/markers/pattern-stanp1.patt',
-        modelUrl: 'assets/models/protoceratops.glb',
-        target: 1.45,
-        yOffset: 0.05,
-        rotation: '0 180 0',
-        spin: true
-      },
-      {
-        id: 'stanp2',
-        name: 'モデル2',
-        markerName: 'pattern-stanp2',
-        markerUrl: 'assets/markers/pattern-stanp2.patt',
-        modelUrl: 'assets/models/model2.glb',
-        target: 1.3,
-        yOffset: 0.05,
-        rotation: '0 180 0',
-        spin: true
-      },
-      {
-        id: 'stanp3',
-        name: 'モデル3',
-        markerName: 'pattern-stanp3',
-        markerUrl: 'assets/markers/pattern-stanp3.patt',
-        modelUrl: 'assets/models/model3.glb',
-        target: 1.3,
-        yOffset: 0.05,
-        rotation: '0 180 0',
-        spin: true
-      },
-      {
-        id: 'stanp4',
-        name: 'モデル4',
-        markerName: 'pattern-stanp4',
-        markerUrl: 'assets/markers/pattern-stanp4.patt',
-        modelUrl: 'assets/models/model4.glb',
-        target: 1.3,
-        yOffset: 0.05,
-        rotation: '0 180 0',
-        spin: true
-      }
-    ];
-  </script>
+  <script src="js/dinosaurs.js"></script>
+  <script src="js/collection.js"></script>
+  <script src="js/ar-main.js"></script>
 
   <style>
     * {
@@ -77,6 +29,7 @@
       background: #000 !important;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       touch-action: none;
+      -webkit-text-size-adjust: 100%;
     }
 
     body {
@@ -150,17 +103,17 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 9999;
-      background: rgba(255, 255, 255, 0.94);
-      color: #111827;
-      padding: 10px 16px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: 14px;
-      line-height: 1.45;
-      text-align: center;
       width: calc(100vw - 48px);
       max-width: 560px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.94);
+      color: #111827;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.45;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
 
     .panel {
@@ -169,11 +122,11 @@
       right: 16px;
       bottom: calc(16px + env(safe-area-inset-bottom));
       z-index: 9999;
-      background: rgba(15, 23, 42, 0.92);
-      color: #fff;
+      padding: 16px;
       border: 1px solid rgba(148, 163, 184, 0.4);
       border-radius: 20px;
-      padding: 16px;
+      background: rgba(15, 23, 42, 0.92);
+      color: #fff;
       backdrop-filter: blur(10px);
     }
 
@@ -181,39 +134,44 @@
       display: flex;
       justify-content: space-between;
       gap: 12px;
-      font-weight: 800;
-      font-size: 18px;
       margin-bottom: 8px;
+      font-size: 18px;
+      font-weight: 800;
     }
 
     #ar-status {
+      margin-bottom: 12px;
+      color: #e5e7eb;
       font-size: 15px;
       line-height: 1.6;
-      color: #e5e7eb;
-      margin-bottom: 12px;
     }
 
     .actions {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 10px;
     }
 
     .actions a,
     .actions button {
       display: inline-block;
       border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
       background: #fff;
       color: #111827;
-      text-decoration: none;
-      padding: 10px 16px;
-      border-radius: 999px;
-      font-weight: 800;
       font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
     }
 
     .actions button:disabled {
       opacity: 0.55;
+    }
+
+    .count {
+      opacity: 0.9;
+      font-size: 13px;
     }
   </style>
 </head>
@@ -230,14 +188,70 @@
       gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;"
       arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
 
-      <a-entity id="markers-root"></a-entity>
+      <a-assets timeout="60000">
+        <a-asset-item id="model-protoceratops" src="assets/models/protoceratops.glb"></a-asset-item>
+        <a-asset-item id="model-ravjaa" src="assets/models/ravjaa.glb"></a-asset-item>
+        <a-asset-item id="model-corythosaurus" src="assets/models/corythosaurus.glb"></a-asset-item>
+        <a-asset-item id="model-zavacephale" src="assets/models/zavacephale.glb"></a-asset-item>
+        <a-asset-item id="model-pinacosaurus" src="assets/models/raujaa.glb"></a-asset-item>
+        <a-asset-item id="model-tarbosaurus" src="assets/models/torikosaurusu.glb"></a-asset-item>
+      </a-assets>
+
+      <a-marker id="marker-protoceratops" data-dino-id="protoceratops" type="pattern" url="assets/markers/pattern-stanp1.patt" emitevents="true">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity class="dino-model" gltf-model="#model-protoceratops" fit-on-marker="target: 1.45; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+        </a-entity>
+      </a-marker>
+
+      <a-marker id="marker-ravjaa" data-dino-id="ravjaa" type="pattern" url="assets/markers/pattern-stanp2.patt" emitevents="true">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity class="dino-model" gltf-model="#model-ravjaa" fit-on-marker="target: 1.3; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+        </a-entity>
+      </a-marker>
+
+      <a-marker id="marker-corythosaurus" data-dino-id="corythosaurus" type="pattern" url="assets/markers/pattern-stanp3.patt" emitevents="true">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity class="dino-model" gltf-model="#model-corythosaurus" fit-on-marker="target: 1.35; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+        </a-entity>
+      </a-marker>
+
+      <a-marker id="marker-zavacephale" data-dino-id="zavacephale" type="pattern" url="assets/markers/pattern-stanp4.patt" emitevents="true">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity class="dino-model" gltf-model="#model-zavacephale" fit-on-marker="target: 1.3; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+        </a-entity>
+      </a-marker>
+
+      <a-marker id="marker-pinacosaurus" data-dino-id="pinacosaurus" type="pattern" url="assets/markers/pattern-stanp5.patt" emitevents="true">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity class="dino-model" gltf-model="#model-pinacosaurus" fit-on-marker="target: 1.25; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+        </a-entity>
+      </a-marker>
+
+      <a-marker id="marker-tarbosaurus" data-dino-id="tarbosaurus" type="pattern" url="assets/markers/pattern-stanp6.patt" emitevents="true">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity class="dino-model" gltf-model="#model-tarbosaurus" fit-on-marker="target: 1.35; yOffset: 0.05" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"></a-entity>
+        </a-entity>
+      </a-marker>
+
       <a-entity camera></a-entity>
     </a-scene>
   </div>
 
   <div id="ar-ui" class="panel">
     <div class="title">
-      <span>ARモデル調整</span>
+      <span>ARカメラ</span>
       <span id="current-model-name">待機中</span>
     </div>
     <div id="ar-status">マーカーを探しています。マーカー全体が画面に入るようにしてください。</div>
@@ -245,8 +259,8 @@
       <button id="add-collection" type="button" disabled>コレクションに追加</button>
       <a href="collection.html">コレクション</a>
       <a href="index.html">トップへ</a>
+      <span class="count" id="collected-count">0 / 6</span>
     </div>
   </div>
-
 </body>
 </html>

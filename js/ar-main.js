@@ -1,46 +1,29 @@
 (function () {
   'use strict';
 
-  const DEFAULT_MODELS = [
-    {
-      id: 'stanp1',
-      name: 'プロトケラトプス',
-      markerName: 'pattern-stanp1',
-      markerUrl: 'assets/markers/pattern-stanp1.patt',
-      modelUrl: 'assets/models/protoceratops.glb',
-      target: 1.45,
-      yOffset: 0.05,
-      rotation: '0 180 0',
-      spin: true
-    }
-  ];
-
-  const models = Array.isArray(window.AR_MODELS) && window.AR_MODELS.length
-    ? window.AR_MODELS
-    : DEFAULT_MODELS;
-
   let currentDinoId = null;
   const visibleDinoIds = new Set();
-  let initialized = false;
   let layoutRunning = false;
 
-  function findConfig(id) {
-    return models.find((item) => item.id === id) || null;
+  function getDinosaurList() {
+    return Array.isArray(window.DINOSAURS) ? window.DINOSAURS : [];
   }
 
-  function safeFindDinosaur(id) {
+  function findDino(id) {
     if (typeof window.findDinosaur === 'function') {
       const found = window.findDinosaur(id);
       if (found) return found;
     }
-    return findConfig(id);
+    return getDinosaurList().find((dino) => dino.id === id) || null;
   }
 
   function getCollectionSafe() {
     if (typeof window.getCollection === 'function') return window.getCollection();
     try {
-      return JSON.parse(localStorage.getItem('dinoCollection') || '[]');
-    } catch (e) {
+      const raw = localStorage.getItem('oc_dinosaur_collection_v1');
+      const values = raw ? JSON.parse(raw) : [];
+      return Array.isArray(values) ? values : [];
+    } catch (error) {
       return [];
     }
   }
@@ -50,11 +33,9 @@
       window.addToCollection(id);
       return;
     }
-    const collection = getCollectionSafe();
-    if (!collection.includes(id)) {
-      collection.push(id);
-      localStorage.setItem('dinoCollection', JSON.stringify(collection));
-    }
+    const current = getCollectionSafe();
+    if (!current.includes(id)) current.push(id);
+    localStorage.setItem('oc_dinosaur_collection_v1', JSON.stringify([...new Set(current)]));
   }
 
   function setStatus(text) {
@@ -70,7 +51,8 @@
   function updateCount() {
     const countEl = document.getElementById('collected-count');
     if (!countEl) return;
-    countEl.textContent = `${getCollectionSafe().length} / ${models.length}`;
+    const total = getDinosaurList().length || document.querySelectorAll('a-marker[data-dino-id]').length;
+    countEl.textContent = `${getCollectionSafe().length} / ${total}`;
   }
 
   function updateButton() {
@@ -83,9 +65,9 @@
       return;
     }
 
-    const dino = safeFindDinosaur(currentDinoId);
-    const already = getCollectionSafe().includes(currentDinoId);
+    const dino = findDino(currentDinoId);
     const name = dino ? dino.name : 'モデル';
+    const already = getCollectionSafe().includes(currentDinoId);
     button.textContent = already ? `${name} は追加済み` : `${name} を追加`;
   }
 
@@ -96,7 +78,7 @@
       setCurrentName('待機中');
       setStatus('マーカーを探しています。マーカー全体が画面に入るようにしてください。');
     } else {
-      const dino = safeFindDinosaur(currentDinoId);
+      const dino = findDino(currentDinoId);
       const name = dino ? dino.name : '3Dモデル';
       setCurrentName(name);
       setStatus(`${name} を認識中です。見切れる場合はスマホを少し引いてください。`);
@@ -122,24 +104,19 @@
       const pixelWidth = `${width}px`;
       const pixelHeight = `${height}px`;
 
-      const html = document.documentElement;
-      const body = document.body;
-
-      [html, body].forEach((el) => {
+      [document.documentElement, document.body].forEach((el) => {
         el.style.setProperty('margin', '0', 'important');
         el.style.setProperty('padding', '0', 'important');
         el.style.setProperty('width', pixelWidth, 'important');
         el.style.setProperty('height', pixelHeight, 'important');
         el.style.setProperty('min-width', pixelWidth, 'important');
         el.style.setProperty('min-height', pixelHeight, 'important');
-        el.style.setProperty('max-width', pixelWidth, 'important');
-        el.style.setProperty('max-height', pixelHeight, 'important');
         el.style.setProperty('overflow', 'hidden', 'important');
         el.style.setProperty('background', '#000', 'important');
       });
 
-      body.style.setProperty('position', 'fixed', 'important');
-      body.style.setProperty('inset', '0', 'important');
+      document.body.style.setProperty('position', 'fixed', 'important');
+      document.body.style.setProperty('inset', '0', 'important');
 
       document.querySelectorAll('#ar-root, a-scene, .a-canvas, canvas, video, #arjs-video').forEach((el) => {
         el.style.setProperty('position', 'fixed', 'important');
@@ -149,8 +126,6 @@
         el.style.setProperty('bottom', 'auto', 'important');
         el.style.setProperty('width', pixelWidth, 'important');
         el.style.setProperty('height', pixelHeight, 'important');
-        el.style.setProperty('min-width', pixelWidth, 'important');
-        el.style.setProperty('min-height', pixelHeight, 'important');
         el.style.setProperty('max-width', 'none', 'important');
         el.style.setProperty('max-height', 'none', 'important');
         el.style.setProperty('margin', '0', 'important');
@@ -168,17 +143,15 @@
         el.style.setProperty('background', '#000', 'important');
       });
 
-      document.querySelectorAll('a-scene, canvas, .a-canvas').forEach((el) => {
-        el.style.setProperty('background', 'transparent', 'important');
-      });
-
       document.querySelectorAll('a-scene').forEach((el) => {
         el.style.setProperty('z-index', '1', 'important');
+        el.style.setProperty('background', 'transparent', 'important');
       });
 
       document.querySelectorAll('canvas, .a-canvas').forEach((el) => {
         el.style.setProperty('z-index', '2', 'important');
         el.style.setProperty('pointer-events', 'none', 'important');
+        el.style.setProperty('background', 'transparent', 'important');
       });
 
       const scene = document.querySelector('a-scene');
@@ -188,11 +161,11 @@
           scene.renderer.setClearAlpha(0);
           scene.renderer.setSize(width, height, false);
           if (scene.object3D) scene.object3D.background = null;
-        } catch (e) {}
+        } catch (error) {}
       }
 
       if (scene && typeof scene.resize === 'function') {
-        try { scene.resize(); } catch (e) {}
+        try { scene.resize(); } catch (error) {}
       }
 
       layoutRunning = false;
@@ -211,20 +184,20 @@
         this.el.addEventListener('model-loaded', () => {
           const marker = this.el.closest('a-marker');
           const dinoId = marker ? marker.dataset.dinoId : '';
-          const dino = dinoId ? safeFindDinosaur(dinoId) : null;
-          const object3D = this.el.getObject3D('mesh');
+          const dino = dinoId ? findDino(dinoId) : null;
+          const mesh = this.el.getObject3D('mesh');
 
           if (dino) {
             setStatus(`${dino.name} の3Dモデルを読み込みました。マーカーにかざしてください。`);
           }
 
-          if (!object3D || !window.THREE) return;
+          if (!mesh || !window.THREE) return;
 
           this.el.object3D.scale.set(1, 1, 1);
           this.el.object3D.position.set(0, 0, 0);
           this.el.object3D.updateMatrixWorld(true);
 
-          const box = new THREE.Box3().setFromObject(object3D);
+          const box = new THREE.Box3().setFromObject(mesh);
           const size = new THREE.Vector3();
           const center = new THREE.Vector3();
           box.getSize(size);
@@ -247,112 +220,45 @@
     });
   }
 
-  async function fileExists(url) {
-    try {
-      const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
-      return res.ok;
-    } catch (e) {
-      return true;
-    }
-  }
+  function initMarkerEvents() {
+    document.querySelectorAll('a-marker[data-dino-id]').forEach((marker) => {
+      if (marker.dataset.eventsReady === 'true') return;
+      marker.dataset.eventsReady = 'true';
+      const id = marker.dataset.dinoId;
 
-  function createMarker(config) {
-    const marker = document.createElement('a-marker');
-    marker.setAttribute('id', `marker-${config.id}`);
-    marker.setAttribute('type', 'pattern');
-    marker.setAttribute('url', config.markerUrl);
-    marker.setAttribute('emitevents', 'true');
-    marker.dataset.dinoId = config.id;
+      marker.addEventListener('markerFound', () => {
+        visibleDinoIds.add(id);
+        chooseCurrentDino();
+        forceArLayout();
+      });
 
-    const ambient = document.createElement('a-entity');
-    ambient.setAttribute('light', 'type: ambient; intensity: 1.8');
-    marker.appendChild(ambient);
-
-    const directional = document.createElement('a-entity');
-    directional.setAttribute('light', 'type: directional; intensity: 1.2');
-    directional.setAttribute('position', '0 2 2');
-    marker.appendChild(directional);
-
-    const holder = document.createElement('a-entity');
-    holder.setAttribute('id', `holder-${config.id}`);
-    holder.setAttribute('position', config.position || '0 0.02 0');
-    holder.setAttribute('rotation', config.rotation || '0 180 0');
-
-    const model = document.createElement('a-entity');
-    model.classList.add('dino-model');
-    model.setAttribute('id', `model-${config.id}`);
-    model.setAttribute('gltf-model', `url(${config.modelUrl})`);
-    model.setAttribute('fit-on-marker', `target: ${config.target || 1.2}; yOffset: ${config.yOffset ?? 0.02}`);
-
-    if (config.spin !== false) {
-      model.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 12000');
-    }
-
-    holder.appendChild(model);
-    marker.appendChild(holder);
-
-    marker.addEventListener('markerFound', () => {
-      visibleDinoIds.add(config.id);
-      chooseCurrentDino();
-      forceArLayout();
+      marker.addEventListener('markerLost', () => {
+        visibleDinoIds.delete(id);
+        chooseCurrentDino();
+        forceArLayout();
+      });
     });
 
-    marker.addEventListener('markerLost', () => {
-      visibleDinoIds.delete(config.id);
-      chooseCurrentDino();
-      forceArLayout();
+    document.querySelectorAll('.dino-model').forEach((modelEl) => {
+      if (modelEl.dataset.errorReady === 'true') return;
+      modelEl.dataset.errorReady = 'true';
+      modelEl.addEventListener('model-error', (event) => {
+        const marker = modelEl.closest('a-marker');
+        const id = marker ? marker.dataset.dinoId : '';
+        const dino = id ? findDino(id) : null;
+        console.error('モデル読み込み失敗:', id, event.detail);
+        setStatus(`${dino ? dino.name : '3Dモデル'} の読み込みに失敗しました。assets/models のファイル名を確認してください。`);
+      });
     });
-
-    model.addEventListener('model-error', (event) => {
-      console.error('モデル読み込み失敗:', config.id, event.detail);
-      setStatus(`${config.name} の読み込みに失敗しました。modelUrl のファイル名を確認してください。`);
-    });
-
-    return marker;
-  }
-
-  async function buildMarkers() {
-    const root = document.getElementById('markers-root');
-    if (!root || root.dataset.built === 'true') return;
-    root.dataset.built = 'true';
-
-    let createdCount = 0;
-
-    for (const config of models) {
-      const markerOk = await fileExists(config.markerUrl);
-      const modelOk = await fileExists(config.modelUrl);
-
-      if (!markerOk || !modelOk) {
-        console.warn('ARモデル設定をスキップ:', config.name, { markerOk, modelOk, config });
-        continue;
-      }
-
-      root.appendChild(createMarker(config));
-      createdCount += 1;
-    }
-
-    if (createdCount === 0) {
-      setStatus('読み込めるマーカー・モデルが見つかりません。assets/markers と assets/models のファイル名を確認してください。');
-    } else if (createdCount === 1) {
-      setStatus(`${models[0].markerName || 'マーカー'} をかざしてください。${models[0].name}を表示します。`);
-    } else {
-      setStatus(`${createdCount}種類のマーカーに対応しました。マーカーをかざしてください。`);
-    }
-
-    updateCount();
-    updateButton();
-    forceArLayout();
   }
 
   function initControls() {
-    if (initialized) return;
-    initialized = true;
-
     const addButton = document.getElementById('add-collection');
-    if (addButton) {
+    if (addButton && addButton.dataset.ready !== 'true') {
+      addButton.dataset.ready = 'true';
       addButton.addEventListener('click', () => {
         if (!currentDinoId) return;
-        const dino = safeFindDinosaur(currentDinoId);
+        const dino = findDino(currentDinoId);
         const name = dino ? dino.name : 'モデル';
         addToCollectionSafe(currentDinoId);
         updateCount();
@@ -391,10 +297,15 @@
     }
   }
 
-  window.addEventListener('DOMContentLoaded', async () => {
+  registerFitComponent();
+
+  window.addEventListener('DOMContentLoaded', () => {
     registerFitComponent();
+    initMarkerEvents();
     initControls();
+    updateCount();
+    updateButton();
+    chooseCurrentDino();
     startLayoutLoop();
-    await buildMarkers();
   });
 })();
