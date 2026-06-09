@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-campus-ar-safe-camera-v4';
+const CACHE_NAME = 'open-campus-ar-zavacephale-v5';
 const CORE_ASSETS = [
   './',
   './index.html',

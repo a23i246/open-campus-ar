@@ -5,6 +5,7 @@
 // collectionDistance  : コレクション詳細画面でカメラからどれくらい奥に置くか。
 // collectionYOffset   : コレクション詳細画面で上下位置を少しだけ調整します。下に寄る場合は少し上げます。
 // collectionRotation  : コレクション詳細画面を開いた直後の向き。正面がずれる場合はYの数字を調整します。
+// collectionCameraZ   : コレクション詳細画面のカメラ位置。モデルの中に入り込む場合は大きくします。
 
 window.DINOSAURS = [
   {
@@ -54,9 +55,12 @@ window.DINOSAURS = [
     model: 'assets/models/zavacephale.glb',
     url: 'https://blob-storage.f-portal.pref.fukushima.lg.jp/common-article/68d64086d6595221ff0b346d/20250918+%E6%9C%80%E5%8F%A4%E3%81%AE%E9%A0%AD%E7%AA%81%E3%81%8D%E6%81%90%E7%AB%9C%E5%8C%96%E7%9F%B3%E3%82%92%E6%96%B0%E5%B1%9E%E6%96%B0%E7%A8%AE%E3%80%8C%E3%82%B6%E3%83%B4%E3%82%A1%E3%82%B1%E3%83%95%E3%82%A1%E3%83%AC%E3%83%BB%E3%83%AA%E3%83%B3%E3%83%9D%E3%83%81%E3%82%A7%E3%80%8D%E3%82%92%E7%99%BA%E8%A6%8B+HP%E7%94%A8+%281%29-cleaned%281%29.pdf',
     description: 'サヴァケファレがARマーカーから飛び出して、君のコレクションに加わりました。丸みのある頭部に注目してみましょう。',
-    collectionFitTarget: 2.4,
-    collectionDistance: 3.1,
-    collectionYOffset: 0.06,
+    // このモデルだけ元データの奥行き・原点のクセが強く、通常設定だとカメラが中に入りやすいです。
+    // そのため、他モデルより小さめ＋奥側に置き、カメラも少し後ろへ下げています。
+    collectionFitTarget: 1.35,
+    collectionDistance: 5.4,
+    collectionYOffset: 0.12,
+    collectionCameraZ: 4.8,
     collectionRotation: '0 0 0'
   },
   {

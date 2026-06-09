@@ -143,6 +143,7 @@ function openDetail(id) {
   const link = document.getElementById('modal-link');
   const model = document.getElementById('modal-model');
   const scene = document.querySelector('#modal-model-wrap a-scene');
+  const camera = document.querySelector('#modal-model-wrap [camera]');
 
   if (title) title.textContent = dino.name;
   if (description) description.textContent = dino.description;
@@ -159,6 +160,12 @@ function openDetail(id) {
   if (modal) {
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
+  }
+
+  if (camera) {
+    // サヴァケファレのように、モデルの奥行きや原点のクセでカメラが中に入り込む場合があるため、
+    // 恐竜ごとにカメラ位置を変えられるようにしています。基本値は 3.4 です。
+    camera.setAttribute('position', `0 0 ${Number(dino.collectionCameraZ) || 3.4}`);
   }
 
   if (model) {
