@@ -1,5 +1,5 @@
-const CACHE_READY_KEY = 'oc_cache_ready_v3';
-const CACHE_TIME_KEY = 'oc_cache_time_v3';
+const CACHE_READY_KEY = 'oc_cache_ready_v4';
+const CACHE_TIME_KEY = 'oc_cache_time_v4';
 
 function getPreloadTargets() {
   const commonFiles = [

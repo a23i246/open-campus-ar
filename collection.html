@@ -67,14 +67,14 @@
           <a-entity id="modal-model" position="0 -0.35 -3" scale="2 2 2" rotation="0 0 0"></a-entity>
 
           <!-- 3Dモデルを見るためのカメラです。基本触らなくてOKです。 -->
-          <a-entity camera position="0 1.0 3.4"></a-entity>
+          <a-entity camera position="0 0 3.4"></a-entity>
         </a-scene>
       </div>
 
       <!-- モデルの大きさ調整。端末差で小さく見える場合に、ユーザー側で調整できます。 -->
       <div class="model-zoom-controls" aria-label="3Dモデルの大きさ調整">
         <button class="button light" type="button" data-model-zoom="out">− 小さく</button>
-        <span id="model-zoom-label">100%</span>
+        <button class="button light zoom-reset" type="button" data-model-zoom="reset"><span id="model-zoom-label">100%</span></button>
         <button class="button light" type="button" data-model-zoom="in">＋ 大きく</button>
       </div>
 

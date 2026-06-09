@@ -1,17 +1,10 @@
 // 恐竜データの対応表です。
 // 友人が恐竜名・説明・画像・3Dモデルを変える場合は、基本このファイルを編集します。
 
-// 1体分の見方：
-// id                 : プログラム内部で使う名前。英数字推奨。途中で変えると保存済みコレクションに影響します。
-// name               : 画面に表示される恐竜名。
-// marker             : AR認識用の .patt ファイル。
-// markerImage        : コレクションカードに表示するマーカー画像。
-// model              : 表示する3Dモデルの .glb ファイル。
-// url                : 「詳細を見る」ボタンのリンク先。不要なら空文字 ''。
-// description        : コレクションカードと詳細画面に出る説明文。
-// collectionScale    : コレクション詳細画面での3Dモデルの大きさ。
-// collectionPosition : コレクション詳細画面での3Dモデルの位置。
-// collectionRotation : コレクション詳細画面を開いた直後の向き。正面がずれる場合はYの数字を調整します。
+// collectionFitTarget : コレクション詳細画面で自動フィットさせる大きさ。大きく見せたい場合はここを上げます。
+// collectionDistance  : コレクション詳細画面でカメラからどれくらい奥に置くか。
+// collectionYOffset   : コレクション詳細画面で上下位置を少しだけ調整します。下に寄る場合は少し上げます。
+// collectionRotation  : コレクション詳細画面を開いた直後の向き。正面がずれる場合はYの数字を調整します。
 
 window.DINOSAURS = [
   {
@@ -22,8 +15,9 @@ window.DINOSAURS = [
     model: 'assets/models/protoceratops.glb',
     url: 'https://ja.wikipedia.org/wiki/%E3%83%97%E3%83%AD%E3%83%88%E3%82%B1%E3%83%A9%E3%83%88%E3%83%97%E3%82%B9',
     description: 'プロトケラトプスがARマーカーから飛び出して、君のコレクションに加わりました。フリルのある頭部が特徴的な恐竜です。',
-    collectionScale: '2.8 2.8 2.8',
-    collectionPosition: '0 -0.35 -3',
+    collectionFitTarget: 2.35,
+    collectionDistance: 3.1,
+    collectionYOffset: 0.04,
     collectionRotation: '0 0 0'
   },
   {
@@ -34,8 +28,9 @@ window.DINOSAURS = [
     model: 'assets/models/ravjaa.glb',
     url: 'https://www.ous.ac.jp/common/files//202504071232270270933.pdf',
     description: 'ラウジャアがARマーカーから飛び出して、君のコレクションに加わりました。指で回して姿を確認してみましょう。',
-    collectionScale: '2.8 2.8 2.8',
-    collectionPosition: '0 -0.35 -3',
+    collectionFitTarget: 2.45,
+    collectionDistance: 3.1,
+    collectionYOffset: 0.06,
     collectionRotation: '0 0 0'
   },
   {
@@ -46,8 +41,9 @@ window.DINOSAURS = [
     model: 'assets/models/corythosaurus.glb',
     url: 'https://www.ous.ac.jp/common/files//202210281320210885382.pdf',
     description: 'コリトサウルスがARマーカーから飛び出して、君のコレクションに加わりました。頭の大きなトサカが特徴的です。',
-    collectionScale: '3.2 3.2 3.2',
-    collectionPosition: '0 -0.35 -3',
+    collectionFitTarget: 2.45,
+    collectionDistance: 3.1,
+    collectionYOffset: 0.04,
     collectionRotation: '0 0 0'
   },
   {
@@ -58,8 +54,9 @@ window.DINOSAURS = [
     model: 'assets/models/zavacephale.glb',
     url: 'https://blob-storage.f-portal.pref.fukushima.lg.jp/common-article/68d64086d6595221ff0b346d/20250918+%E6%9C%80%E5%8F%A4%E3%81%AE%E9%A0%AD%E7%AA%81%E3%81%8D%E6%81%90%E7%AB%9C%E5%8C%96%E7%9F%B3%E3%82%92%E6%96%B0%E5%B1%9E%E6%96%B0%E7%A8%AE%E3%80%8C%E3%82%B6%E3%83%B4%E3%82%A1%E3%82%B1%E3%83%95%E3%82%A1%E3%83%AC%E3%83%BB%E3%83%AA%E3%83%B3%E3%83%9D%E3%83%81%E3%82%A7%E3%80%8D%E3%82%92%E7%99%BA%E8%A6%8B+HP%E7%94%A8+%281%29-cleaned%281%29.pdf',
     description: 'サヴァケファレがARマーカーから飛び出して、君のコレクションに加わりました。丸みのある頭部に注目してみましょう。',
-    collectionScale: '2.8 2.8 2.8',
-    collectionPosition: '0 -0.35 -3',
+    collectionFitTarget: 2.4,
+    collectionDistance: 3.1,
+    collectionYOffset: 0.06,
     collectionRotation: '0 0 0'
   },
   {
@@ -70,8 +67,9 @@ window.DINOSAURS = [
     model: 'assets/models/raujaa.glb',
     url: '',
     description: 'ピナコサウルスがARマーカーから飛び出して、君のコレクションに加わりました。※現在のファイル内にpinacosaurus名のGLBがないため、近い候補としてraujaa.glbを割り当てています。',
-    collectionScale: '3.0 3.0 3.0',
-    collectionPosition: '0 -0.35 -3',
+    collectionFitTarget: 2.45,
+    collectionDistance: 3.1,
+    collectionYOffset: 0.06,
     collectionRotation: '0 0 0'
   },
   {
@@ -82,8 +80,10 @@ window.DINOSAURS = [
     model: 'assets/models/torikosaurusu.glb',
     url: '',
     description: 'タルボサウルスがARマーカーから飛び出して、君のコレクションに加わりました。※現在のファイル内にtarbosaurus名のGLBがないため、近い候補としてtorikosaurusu.glbを割り当てています。',
-    collectionScale: '3.0 3.0 3.0',
-    collectionPosition: '0 -0.35 -3'
+    collectionFitTarget: 2.45,
+    collectionDistance: 3.1,
+    collectionYOffset: 0.04,
+    collectionRotation: '0 0 0'
   }
 ];
 

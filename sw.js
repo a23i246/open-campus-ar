@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-campus-ar-safe-camera-v3';
+const CACHE_NAME = 'open-campus-ar-safe-camera-v4';
 const CORE_ASSETS = [
   './',
   './index.html',

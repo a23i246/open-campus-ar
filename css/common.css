@@ -130,3 +130,53 @@ button:disabled, .button.disabled { background: #94a3b8; box-shadow: none; curso
 .modal-model .a-enter-ar {
   display: none !important;
 }
+
+/* =========================================================
+   追加修正：コレクション詳細モデルを中央に出し、拡大縮小ボタンを確実に表示
+   ========================================================= */
+.modal-model {
+  height: 330px;
+  background: #f8fafc;
+}
+
+#modal-model-wrap a-scene,
+#modal-model-wrap canvas,
+#modal-model-wrap .a-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  inset: auto !important;
+  background: transparent !important;
+}
+
+.model-zoom-controls {
+  position: relative;
+  z-index: 5;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 14px;
+}
+
+.model-zoom-controls .button {
+  min-width: 82px;
+  min-height: 38px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.model-zoom-controls .zoom-reset {
+  min-width: 64px;
+  padding-inline: 10px;
+}
+
+@media (max-width: 520px) {
+  .modal-model {
+    height: 300px;
+  }
+  .model-zoom-controls .button {
+    min-width: 74px;
+    font-size: 12px;
+  }
+}

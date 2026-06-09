@@ -1,38 +1,93 @@
 // collection.html 専用の処理です。
-// 役割：コレクション一覧を表示する、カード詳細を開く、3Dモデルを横回転させる、リセットする。
+// 役割：コレクション一覧を表示する、カード詳細を開く、3Dモデルを横回転させる、拡大縮小する、リセットする。
 
 // =========================================================
-// 3Dモデルの横回転用の状態管理
+// 3Dモデルの横回転・拡大縮小用の状態管理
 // =========================================================
-// 「現在のY方向の回転角度」を保存しておく変数です。
-// A-Frameの rotation は「X Y Z」の順番で、Yだけ変えると横回転になります。
 let modalModelRotationY = 0;
-
-
-// =========================================================
-// 3Dモデルの拡大・縮小用の状態管理
-// =========================================================
-let modalModelBaseScale = 1;
 let modalModelZoom = 1;
+let modalModelBaseTarget = 2.2;
+let currentDetailDino = null;
 
-function getScaleNumber(scaleText) {
-  if (!scaleText) return 1;
-  const first = String(scaleText).trim().split(/\s+/)[0];
-  const value = Number(first);
-  return Number.isFinite(value) && value > 0 ? value : 1;
+// =========================================================
+// コレクション詳細用：GLBを自動で中央寄せ＋見える大きさにするコンポーネント
+// =========================================================
+// 前の方式は js/dinosaurs.js の collectionScale / collectionPosition をそのまま使っていました。
+// ただ、GLBごとに原点やサイズが違うため、ラウジャア・ピナコサウルス系が枠外に寄ったり、
+// モデルが下側ギリギリに出ることがありました。
+// ここでは読み込んだGLBの外接ボックスを見て、中心が画面中央に来るように自動補正します。
+if (window.AFRAME && !AFRAME.components['fit-gltf-in-collection']) {
+  AFRAME.registerComponent('fit-gltf-in-collection', {
+    schema: {
+      target: { type: 'number', default: 2.2 },
+      zoom: { type: 'number', default: 1 },
+      distance: { type: 'number', default: 3.1 },
+      yOffset: { type: 'number', default: 0.05 }
+    },
+
+    init: function () {
+      this.el.addEventListener('model-loaded', () => this.fit());
+      this.el.addEventListener('model-error', (event) => {
+        console.error('collection model-error:', event);
+        const title = document.getElementById('modal-title');
+        if (title) title.textContent += '（モデル読込失敗）';
+      });
+    },
+
+    update: function () {
+      this.fit();
+    },
+
+    fit: function () {
+      const mesh = this.el.getObject3D('mesh');
+      if (!mesh || !window.THREE) return;
+
+      // いったん標準状態に戻してから外接ボックスを取ります。
+      this.el.object3D.scale.set(1, 1, 1);
+      this.el.object3D.position.set(0, 0, -this.data.distance);
+      this.el.object3D.updateMatrixWorld(true);
+
+      const box = new THREE.Box3().setFromObject(mesh);
+      const size = new THREE.Vector3();
+      const center = new THREE.Vector3();
+      box.getSize(size);
+      box.getCenter(center);
+
+      const maxSize = Math.max(size.x, size.y, size.z);
+      if (!Number.isFinite(maxSize) || maxSize <= 0) return;
+
+      const target = this.data.target * this.data.zoom;
+      const scale = target / maxSize;
+
+      // GLBの中心が画面中央に来るように原点ズレを打ち消します。
+      // zはカメラから少し奥へ置きます。
+      this.el.object3D.scale.set(scale, scale, scale);
+      this.el.object3D.position.set(
+        -center.x * scale,
+        -center.y * scale + this.data.yOffset,
+        -this.data.distance - center.z * scale
+      );
+      this.el.object3D.updateMatrixWorld(true);
+    }
+  });
+}
+
+function updateZoomLabel() {
+  const label = document.getElementById('model-zoom-label');
+  if (label) label.textContent = `${Math.round(modalModelZoom * 100)}%`;
 }
 
 function applyModalModelScale() {
   const model = document.getElementById('modal-model');
-  const label = document.getElementById('model-zoom-label');
   if (!model) return;
 
-  const scale = Math.max(0.15, Math.min(12, modalModelBaseScale * modalModelZoom));
-  model.setAttribute('scale', `${scale} ${scale} ${scale}`);
-
-  if (label) {
-    label.textContent = `${Math.round(modalModelZoom * 100)}%`;
-  }
+  model.setAttribute('fit-gltf-in-collection', {
+    target: modalModelBaseTarget,
+    zoom: modalModelZoom,
+    distance: currentDetailDino?.collectionDistance || 3.1,
+    yOffset: currentDetailDino?.collectionYOffset ?? 0.05
+  });
+  updateZoomLabel();
 }
 
 function zoomModalModel(direction) {
@@ -40,43 +95,28 @@ function zoomModalModel(direction) {
     modalModelZoom = Math.min(4, modalModelZoom * 1.25);
   } else if (direction === 'out') {
     modalModelZoom = Math.max(0.35, modalModelZoom / 1.25);
+  } else if (direction === 'reset') {
+    modalModelZoom = 1;
   }
   applyModalModelScale();
 }
 
 function renderCollection() {
-  // 恐竜カードを入れる場所です。collection.html の id="collection-root" と対応しています。
   const root = document.getElementById('collection-root');
-
-  // 今まで集めた恐竜IDを localStorage から読み込みます。
-  // 例：['protoceratops', 'ravjaa'] のような配列になります。
   const collected = getCollection();
-
-  // 恐竜一覧データです。中身は js/dinosaurs.js にあります。
   const dinos = window.DINOSAURS || [];
 
-  // 「現在 2 / 6 体」の数字部分を書き換えます。
   const totalEl = document.getElementById('collection-total');
   if (totalEl) totalEl.textContent = `${collected.length} / ${dinos.length}`;
 
-  // 表示先が見つからない場合はここで終了します。
   if (!root) return;
-
-  // 一度カード一覧を空にしてから、最新状態で作り直します。
   root.innerHTML = '';
 
   dinos.forEach((dino, index) => {
-    // この恐竜が収集済みかどうかを判定します。
     const isCollected = collected.includes(dino.id);
-
-    // articleタグで1枚分のカードを作ります。
     const card = document.createElement('article');
-
-    // 未収集なら locked クラスを付けて、灰色表示にします。
     card.className = `collection-item ${isCollected ? '' : 'locked'}`;
 
-    // カードのHTMLです。
-    // 表示内容を変えたい場合は、ここか js/dinosaurs.js のデータを変更します。
     card.innerHTML = `
       <div class="collection-thumb-wrap">
         <img src="${dino.markerImage}" alt="${dino.name}のマーカー画像" loading="lazy">
@@ -87,17 +127,16 @@ function renderCollection() {
       <button class="button light" data-detail="${dino.id}" ${isCollected ? '' : 'disabled'}>${isCollected ? '詳しく見る' : '未収集'}</button>
     `;
 
-    // 完成したカードを画面に追加します。
     root.appendChild(card);
   });
 }
 
 function openDetail(id) {
-  // 押されたカードの恐竜IDから、恐竜データを1件探します。
   const dino = findDinosaur(id);
   if (!dino) return;
 
-  // モーダル内の各パーツを取得します。
+  currentDetailDino = dino;
+
   const modal = document.getElementById('detail-modal');
   const title = document.getElementById('modal-title');
   const description = document.getElementById('modal-description');
@@ -105,11 +144,9 @@ function openDetail(id) {
   const model = document.getElementById('modal-model');
   const scene = document.querySelector('#modal-model-wrap a-scene');
 
-  // タイトルと説明文を、選択した恐竜の内容に変更します。
   if (title) title.textContent = dino.name;
   if (description) description.textContent = dino.description;
 
-  // 詳細リンクがある恐竜だけ「詳細を見る」ボタンを表示します。
   if (link) {
     if (dino.url) {
       link.href = dino.url;
@@ -119,41 +156,31 @@ function openDetail(id) {
     }
   }
 
-  // 先にモーダルを表示します。
-  // 重要：A-Frameは非表示状態のまま読み込むと、3D表示用canvasが0pxになって何も出ないことがあります。
   if (modal) {
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
   }
 
   if (model) {
-    // 前回開いたモデルをいったん外します。
     model.removeAttribute('gltf-model');
     model.removeAttribute('animation');
 
-    // コレクション画面用の大きさ・位置を設定します。
-    // 端末やGLBファイルによって大きさがかなり変わるため、
-    // 初期値に加えて「＋/−ボタン」でユーザーが調整できるようにしています。
-    const startScale = dino.collectionScale || '2 2 2';
-    modalModelBaseScale = getScaleNumber(startScale);
+    // 初期サイズ。恐竜ごとに collectionFitTarget を指定でき、なければ2.2です。
+    modalModelBaseTarget = Number(dino.collectionFitTarget) || 2.2;
     modalModelZoom = 1;
-    applyModalModelScale();
-    model.setAttribute('position', dino.collectionPosition || '0 -0.35 -3');
 
-    // 最初に表示する向きです。正面がずれる場合は js/dinosaurs.js の collectionRotation を調整します。
     const startRotation = dino.collectionRotation || '0 0 0';
     const parts = startRotation.split(' ').map(Number);
     modalModelRotationY = Number.isFinite(parts[1]) ? parts[1] : 0;
     model.setAttribute('rotation', startRotation);
 
-    // モーダルが開いてから、次の描画タイミングでA-Frameにサイズ再計算させます。
-    // これがないと、白い枠だけ出てモデルが出ない端末があります。
-    requestAnimationFrame(() => {
-      if (scene?.resize) scene.resize();
-      model.setAttribute('gltf-model', `url(${dino.model})`);
+    applyModalModelScale();
 
-      // 念のため少し遅らせてもう一度リサイズします。スマホ対策です。
+    requestAnimationFrame(() => {
+      scene?.resize?.();
+      model.setAttribute('gltf-model', `url(${dino.model})`);
       setTimeout(() => scene?.resize?.(), 150);
+      setTimeout(() => scene?.resize?.(), 500);
     });
   }
 }
@@ -161,10 +188,12 @@ function openDetail(id) {
 function closeDetail() {
   const modal = document.getElementById('detail-modal');
   const model = document.getElementById('modal-model');
-  // 閉じるときに3Dモデルを外します。スマホの負荷を少し減らすためです。
   if (model) model.removeAttribute('gltf-model');
 
-  // モーダルを非表示にします。
+  currentDetailDino = null;
+  modalModelZoom = 1;
+  updateZoomLabel();
+
   if (modal) {
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
@@ -172,8 +201,6 @@ function closeDetail() {
 }
 
 function setupModelSwipeRotation() {
-  // 3Dモデルを表示している枠です。
-  // この枠の上で左右にドラッグ/フリックしたときだけ、モデルを横回転させます。
   const wrap = document.getElementById('modal-model-wrap');
   const model = document.getElementById('modal-model');
   if (!wrap || !model) return;
@@ -184,27 +211,16 @@ function setupModelSwipeRotation() {
   wrap.addEventListener('pointerdown', (event) => {
     isDragging = true;
     lastX = event.clientX;
-
-    // 指が枠から少し外れても、動きを取り続けるための設定です。
     wrap.setPointerCapture?.(event.pointerId);
   });
 
   wrap.addEventListener('pointermove', (event) => {
     if (!isDragging) return;
 
-    // 左右にどれだけ動いたかを計算します。
     const diffX = event.clientX - lastX;
     lastX = event.clientX;
-
-    // 横移動量をY回転角度に変換します。
-    // 数字を大きくするとよく回り、小さくするとゆっくり回ります。
     modalModelRotationY += diffX * 0.55;
-
-    // XとZは0のままにして、Yだけ変えます。
-    // これで上下には倒れず、横方向だけ回転します。
     model.setAttribute('rotation', `0 ${modalModelRotationY} 0`);
-
-    // モデル操作中にページが横に引っ張られるのを防ぎます。
     event.preventDefault();
   });
 
@@ -220,32 +236,23 @@ function setupModelSwipeRotation() {
   wrap.addEventListener('pointerleave', stopDrag);
 }
 
-// HTMLの読み込みが終わってから実行します。
 window.addEventListener('DOMContentLoaded', () => {
-  // 最初にカード一覧を表示します。
   renderCollection();
-
-  // 3Dモデルを指で横回転できるようにします。
   setupModelSwipeRotation();
 
-  // クリック処理をまとめて管理します。
   document.addEventListener('click', (event) => {
-    // 「詳しく見る」ボタンが押された場合、詳細モーダルを開きます。
     const detailButton = event.target.closest('[data-detail]');
     if (detailButton && !detailButton.disabled) openDetail(detailButton.dataset.detail);
 
-    // モデルの拡大・縮小ボタンが押された場合、表示中モデルのscaleを変更します。
     const zoomButton = event.target.closest('[data-model-zoom]');
     if (zoomButton) {
       zoomModalModel(zoomButton.dataset.modelZoom);
       return;
     }
 
-    // 閉じるボタンや黒背景が押された場合、モーダルを閉じます。
     const closeButton = event.target.closest('[data-close-modal]');
     if (closeButton) closeDetail();
 
-    // リセットボタンが押された場合、確認してからコレクションを削除します。
     const clearButton = event.target.closest('[data-clear-collection]');
     if (clearButton && confirm('コレクションをすべて削除しますか？')) {
       clearCollection();
@@ -254,7 +261,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Escキーでもモーダルを閉じられるようにします。
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeDetail();
   });
