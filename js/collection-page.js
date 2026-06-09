@@ -8,59 +8,41 @@
 // A-Frameの rotation は「X Y Z」の順番で、Yだけ変えると横回転になります。
 let modalModelRotationY = 0;
 
+
 // =========================================================
-// 詳細モーダル用：GLBの実寸に合わせて自動で大きさを調整する部品
+// 3Dモデルの拡大・縮小用の状態管理
 // =========================================================
-// GLBはファイルごとに元のサイズがバラバラなので、単純な scale 指定だと
-// 端末によって「豆粒みたいに小さい」表示になりやすいです。
-// そこで読み込み後にモデルの外枠サイズを測り、枠内で見やすい大きさへ自動調整します。
-if (window.AFRAME && !AFRAME.components['fit-gltf-in-modal']) {
-  AFRAME.registerComponent('fit-gltf-in-modal', {
-    schema: {
-      target: { type: 'number', default: 2.0 },
-      yOffset: { type: 'number', default: -0.95 },
-      zOffset: { type: 'number', default: -2.6 }
-    },
+let modalModelBaseScale = 1;
+let modalModelZoom = 1;
 
-    init: function () {
-      this.el.addEventListener('model-loaded', () => this.fitModel());
-    },
-
-    update: function () {
-      // targetを変更したあと、すでにモデルが読めている場合は再調整します。
-      setTimeout(() => this.fitModel(), 0);
-    },
-
-    fitModel: function () {
-      const mesh = this.el.getObject3D('mesh');
-      if (!mesh || !window.THREE) return;
-
-      this.el.object3D.scale.set(1, 1, 1);
-      this.el.object3D.position.set(0, 0, this.data.zOffset);
-      this.el.object3D.updateMatrixWorld(true);
-
-      const box = new THREE.Box3().setFromObject(mesh);
-      const size = new THREE.Vector3();
-      const center = new THREE.Vector3();
-      box.getSize(size);
-      box.getCenter(center);
-
-      const maxSize = Math.max(size.x, size.y, size.z);
-      const scale = maxSize > 0 ? this.data.target / maxSize : 1;
-
-      // X/Zは中央寄せ、Yは下端を基準にして少し下へ置きます。
-      // これで恐竜全体が枠の中心付近に大きく表示されます。
-      this.el.object3D.scale.set(scale, scale, scale);
-      this.el.object3D.position.set(
-        -center.x * scale,
-        -box.min.y * scale + this.data.yOffset,
-        -center.z * scale + this.data.zOffset
-      );
-      this.el.object3D.updateMatrixWorld(true);
-    }
-  });
+function getScaleNumber(scaleText) {
+  if (!scaleText) return 1;
+  const first = String(scaleText).trim().split(/\s+/)[0];
+  const value = Number(first);
+  return Number.isFinite(value) && value > 0 ? value : 1;
 }
 
+function applyModalModelScale() {
+  const model = document.getElementById('modal-model');
+  const label = document.getElementById('model-zoom-label');
+  if (!model) return;
+
+  const scale = Math.max(0.15, Math.min(12, modalModelBaseScale * modalModelZoom));
+  model.setAttribute('scale', `${scale} ${scale} ${scale}`);
+
+  if (label) {
+    label.textContent = `${Math.round(modalModelZoom * 100)}%`;
+  }
+}
+
+function zoomModalModel(direction) {
+  if (direction === 'in') {
+    modalModelZoom = Math.min(4, modalModelZoom * 1.25);
+  } else if (direction === 'out') {
+    modalModelZoom = Math.max(0.35, modalModelZoom / 1.25);
+  }
+  applyModalModelScale();
+}
 
 function renderCollection() {
   // 恐竜カードを入れる場所です。collection.html の id="collection-root" と対応しています。
@@ -150,10 +132,13 @@ function openDetail(id) {
     model.removeAttribute('animation');
 
     // コレクション画面用の大きさ・位置を設定します。
-    // scaleだけに頼らず、fit-gltf-in-modalでGLBの実寸から自動拡大します。
-    model.setAttribute('scale', dino.collectionScale || '1 1 1');
-    model.setAttribute('position', dino.collectionPosition || '0 0 -2.6');
-    model.setAttribute('fit-gltf-in-modal', `target: ${dino.collectionTarget || 2.0}; yOffset: -0.95; zOffset: -2.6`);
+    // 端末やGLBファイルによって大きさがかなり変わるため、
+    // 初期値に加えて「＋/−ボタン」でユーザーが調整できるようにしています。
+    const startScale = dino.collectionScale || '2 2 2';
+    modalModelBaseScale = getScaleNumber(startScale);
+    modalModelZoom = 1;
+    applyModalModelScale();
+    model.setAttribute('position', dino.collectionPosition || '0 -0.35 -3');
 
     // 最初に表示する向きです。正面がずれる場合は js/dinosaurs.js の collectionRotation を調整します。
     const startRotation = dino.collectionRotation || '0 0 0';
@@ -248,6 +233,13 @@ window.addEventListener('DOMContentLoaded', () => {
     // 「詳しく見る」ボタンが押された場合、詳細モーダルを開きます。
     const detailButton = event.target.closest('[data-detail]');
     if (detailButton && !detailButton.disabled) openDetail(detailButton.dataset.detail);
+
+    // モデルの拡大・縮小ボタンが押された場合、表示中モデルのscaleを変更します。
+    const zoomButton = event.target.closest('[data-model-zoom]');
+    if (zoomButton) {
+      zoomModalModel(zoomButton.dataset.modelZoom);
+      return;
+    }
 
     // 閉じるボタンや黒背景が押された場合、モーダルを閉じます。
     const closeButton = event.target.closest('[data-close-modal]');
