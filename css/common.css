@@ -75,7 +75,7 @@ button:disabled, .button.disabled { background: #94a3b8; box-shadow: none; curso
 .modal-card { position: relative; width: min(460px, calc(100vw - 28px)); max-height: calc(100vh - 40px); overflow: auto; margin: 20px auto; background: white; border-radius: 24px; padding: 18px; box-shadow: 0 22px 70px rgba(0,0,0,.35); text-align: center; }
 .modal-close { position: absolute; top: 8px; right: 8px; width: 42px; height: 42px; min-height: 42px; padding: 0; border-radius: 50%; background: #f97316; color: white; font-size: 28px; line-height: 1; z-index: 2; box-shadow: 0 8px 20px rgba(249,115,22,.35); }
 /* 3Dモデル表示エリア。モデル表示が狭い場合は height を増やします。 */
-.modal-model { height: 300px; border-radius: 18px; overflow: hidden; background: #f8fafc; border: 1px solid #e5e7eb; margin-bottom: 12px; }
+.modal-model { height: min(360px, 42vh); border-radius: 18px; overflow: hidden; background: #f8fafc; border: 1px solid #e5e7eb; margin-bottom: 12px; }
 .modal-model a-scene,
 .modal-model canvas {
   width: 100% !important;
@@ -90,7 +90,7 @@ button:disabled, .button.disabled { background: #94a3b8; box-shadow: none; curso
   .page { padding: 14px; }
   .collection-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .collection-item { padding: 10px; border-radius: 16px; }
-  .modal-model { height: 250px; }
+  .modal-model { height: min(340px, 40vh); }
 }
 
 /* 3Dモデルの横回転操作用。

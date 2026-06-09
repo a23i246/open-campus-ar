@@ -59,67 +59,97 @@
       }
     });
 
-    // カメラ映像が黒背景に隠れないようにする補正。
-    // 強制しすぎると Android Chrome + AR.js で真っ黒になるため、
-    // renderer の実サイズ変更や setInterval 連打はしない安全版です。
-    function keepCameraBackgroundVisible() {
-      const scene = document.querySelector('a-scene');
-      if (scene && scene.renderer && window.THREE) {
-        try {
-          scene.renderer.setClearColor(new THREE.Color(0x000000), 0);
-          scene.renderer.setClearAlpha(0);
-          scene.renderer.autoClear = true;
-          if (scene.object3D) scene.object3D.background = null;
-        } catch (e) {}
+    // カメラ映像が右側だけ黒く切れる問題への対策です。
+    // Android Chrome + AR.js では video / canvas の横幅が端末の画面幅より小さく計算され、
+    // 右側に黒帯が出ることがあります。
+    // ここでは visualViewport の実寸を基準に、video は cover で全面表示、canvas は画面全体に固定します。
+    function getViewportSize() {
+      const viewport = window.visualViewport;
+      const width = Math.ceil(viewport?.width || document.documentElement.clientWidth || window.innerWidth || 0);
+      const height = Math.ceil(viewport?.height || document.documentElement.clientHeight || window.innerHeight || 0);
+      return { width, height };
+    }
+
+    function coverVideoElement(video, width, height) {
+      if (!video) return;
+
+      const videoWidth = video.videoWidth || 16;
+      const videoHeight = video.videoHeight || 9;
+      const videoRatio = videoWidth / videoHeight;
+      const screenRatio = width / height;
+
+      let drawWidth = width;
+      let drawHeight = height;
+      let left = 0;
+      let top = 0;
+
+      // object-fit: cover と同じ計算をJS側でも明示します。
+      // 横に余白が出る端末では、この計算で左右にはみ出させて黒帯を消します。
+      if (videoRatio > screenRatio) {
+        drawHeight = height;
+        drawWidth = Math.ceil(height * videoRatio);
+        left = Math.floor((width - drawWidth) / 2);
+      } else {
+        drawWidth = width;
+        drawHeight = Math.ceil(width / videoRatio);
+        top = Math.floor((height - drawHeight) / 2);
       }
+
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.style.setProperty('display', 'block', 'important');
+      video.style.setProperty('visibility', 'visible', 'important');
+      video.style.setProperty('opacity', '1', 'important');
+      video.style.setProperty('position', 'fixed', 'important');
+      video.style.setProperty('left', `${left}px`, 'important');
+      video.style.setProperty('top', `${top}px`, 'important');
+      video.style.setProperty('width', `${drawWidth}px`, 'important');
+      video.style.setProperty('height', `${drawHeight}px`, 'important');
+      video.style.setProperty('max-width', 'none', 'important');
+      video.style.setProperty('max-height', 'none', 'important');
+      video.style.setProperty('object-fit', 'cover', 'important');
+      video.style.setProperty('z-index', '0', 'important');
+      video.style.setProperty('transform', 'none', 'important');
+      video.style.setProperty('background', '#000', 'important');
+      video.style.setProperty('pointer-events', 'none', 'important');
+    }
+
+    function keepCameraBackgroundVisible() {
+      const { width, height } = getViewportSize();
+      const scene = document.querySelector('a-scene');
 
       document.documentElement.style.setProperty('margin', '0', 'important');
       document.documentElement.style.setProperty('padding', '0', 'important');
+      document.documentElement.style.setProperty('width', `${width}px`, 'important');
+      document.documentElement.style.setProperty('height', `${height}px`, 'important');
       document.documentElement.style.setProperty('overflow', 'hidden', 'important');
       document.documentElement.style.setProperty('background', '#000', 'important');
       document.body.style.setProperty('margin', '0', 'important');
       document.body.style.setProperty('padding', '0', 'important');
+      document.body.style.setProperty('width', `${width}px`, 'important');
+      document.body.style.setProperty('height', `${height}px`, 'important');
       document.body.style.setProperty('overflow', 'hidden', 'important');
       document.body.style.setProperty('background', '#000', 'important');
 
-      document.querySelectorAll('video, #arjs-video').forEach((el) => {
-        el.setAttribute('playsinline', '');
-        el.setAttribute('webkit-playsinline', '');
-        el.style.setProperty('display', 'block', 'important');
-        el.style.setProperty('visibility', 'visible', 'important');
-        el.style.setProperty('opacity', '1', 'important');
-        el.style.setProperty('position', 'fixed', 'important');
-        el.style.setProperty('top', '0', 'important');
-        el.style.setProperty('left', '0', 'important');
-        el.style.setProperty('right', '0', 'important');
-        el.style.setProperty('bottom', '0', 'important');
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100dvh', 'important');
-        el.style.setProperty('max-width', 'none', 'important');
-        el.style.setProperty('max-height', 'none', 'important');
-        el.style.setProperty('object-fit', 'cover', 'important');
-        el.style.setProperty('z-index', '0', 'important');
-        el.style.setProperty('transform', 'none', 'important');
-        el.style.setProperty('background', '#000', 'important');
-        el.style.setProperty('pointer-events', 'none', 'important');
-      });
+      if (scene) {
+        scene.style.setProperty('position', 'fixed', 'important');
+        scene.style.setProperty('left', '0', 'important');
+        scene.style.setProperty('top', '0', 'important');
+        scene.style.setProperty('width', `${width}px`, 'important');
+        scene.style.setProperty('height', `${height}px`, 'important');
+        scene.style.setProperty('z-index', '1', 'important');
+        scene.style.setProperty('background', 'transparent', 'important');
+        scene.style.setProperty('overflow', 'hidden', 'important');
+      }
 
-      document.querySelectorAll('a-scene').forEach((el) => {
-        el.style.setProperty('position', 'fixed', 'important');
-        el.style.setProperty('inset', '0', 'important');
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100dvh', 'important');
-        el.style.setProperty('z-index', '1', 'important');
-        el.style.setProperty('background', 'transparent', 'important');
-        el.style.setProperty('overflow', 'hidden', 'important');
-      });
+      document.querySelectorAll('video, #arjs-video').forEach((el) => coverVideoElement(el, width, height));
 
       document.querySelectorAll('canvas, .a-canvas').forEach((el) => {
         el.style.setProperty('position', 'fixed', 'important');
-        el.style.setProperty('top', '0', 'important');
         el.style.setProperty('left', '0', 'important');
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100dvh', 'important');
+        el.style.setProperty('top', '0', 'important');
+        el.style.setProperty('width', `${width}px`, 'important');
+        el.style.setProperty('height', `${height}px`, 'important');
         el.style.setProperty('max-width', 'none', 'important');
         el.style.setProperty('max-height', 'none', 'important');
         el.style.setProperty('z-index', '2', 'important');
@@ -128,10 +158,24 @@
         el.style.setProperty('transform', 'none', 'important');
       });
 
+      if (scene && scene.renderer && window.THREE) {
+        try {
+          scene.renderer.setClearColor(new THREE.Color(0x000000), 0);
+          scene.renderer.setClearAlpha(0);
+          scene.renderer.setSize(width, height, false);
+          if (scene.camera) {
+            scene.camera.aspect = width / height;
+            scene.camera.updateProjectionMatrix?.();
+          }
+          if (scene.object3D) scene.object3D.background = null;
+        } catch (e) {}
+      }
+
       if (scene && typeof scene.resize === 'function') {
         try { scene.resize(); } catch (e) {}
       }
     }
+
 
     window.addEventListener('load', () => {
       [100, 300, 700, 1200, 2000, 3500, 6000].forEach(ms => setTimeout(keepCameraBackgroundVisible, ms));
@@ -244,55 +288,41 @@
       height: 100dvh !important;
       background: transparent !important;
       z-index: 1 !important;
+      overflow: hidden !important;
     }
 
     video, #arjs-video {
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
-
       position: fixed !important;
-
       top: 0 !important;
-      left: -12px !important;
-      right: auto !important;
-
-      width: calc(100vw + 24px) !important;
+      left: 0 !important;
+      width: 100vw !important;
       height: 100vh !important;
       height: 100dvh !important;
-
-      min-width: calc(100vw + 24px) !important;
-      min-height: 100dvh !important;
-
       max-width: none !important;
       max-height: none !important;
-
       object-fit: cover !important;
       z-index: 0 !important;
       transform: none !important;
       background: #000 !important;
+      pointer-events: none !important;
     }
 
     canvas, .a-canvas {
       position: fixed !important;
-
       top: 0 !important;
-      left: -12px !important;
-      right: auto !important;
-
-      width: calc(100vw + 24px) !important;
+      left: 0 !important;
+      width: 100vw !important;
       height: 100vh !important;
       height: 100dvh !important;
-
-      min-width: calc(100vw + 24px) !important;
-      min-height: 100dvh !important;
-
       max-width: none !important;
       max-height: none !important;
-
       background: transparent !important;
       z-index: 2 !important;
       pointer-events: none !important;
+      transform: none !important;
     }
   </style>
 </head>
