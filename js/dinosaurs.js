@@ -1,3 +1,17 @@
+// 恐竜データの対応表です。
+// 友人が恐竜名・説明・画像・3Dモデルを変える場合は、基本このファイルを編集します。
+
+// 1体分の見方：
+// id                 : プログラム内部で使う名前。英数字推奨。途中で変えると保存済みコレクションに影響します。
+// name               : 画面に表示される恐竜名。
+// marker             : AR認識用の .patt ファイル。
+// markerImage        : コレクションカードに表示するマーカー画像。
+// model              : 表示する3Dモデルの .glb ファイル。
+// url                : 「詳細を見る」ボタンのリンク先。不要なら空文字 ''。
+// description        : コレクションカードと詳細画面に出る説明文。
+// collectionScale    : コレクション詳細画面での3Dモデルの大きさ。
+// collectionPosition : コレクション詳細画面での3Dモデルの位置。
+
 window.DINOSAURS = [
   {
     id: 'protoceratops',
@@ -67,6 +81,8 @@ window.DINOSAURS = [
   }
 ];
 
+// お試しマーカー用のデータです。
+// 本番の6体とは別枠なので、コレクション数には含めていません。
 window.TRIAL_MARKER = {
   name: 'お試しマーカー',
   marker: 'assets/markers/pattern-stanp.patt',

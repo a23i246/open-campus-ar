@@ -32,14 +32,21 @@ button:disabled, .button.disabled { background: #94a3b8; box-shadow: none; curso
 .model-viewer { height: 420px; border-radius: 20px; overflow: hidden; background: #111827; }
 .nav { display:flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
 
-/* Collection page, modal-style reference layout */
+/* =========================================================
+   コレクションページ用CSS
+   collection.html のカード一覧・詳細モーダルの見た目をここで調整します。
+   色や余白を変えるだけなら、基本この下の値を変更すればOKです。
+   ========================================================= */
 .eyebrow { font-size: 12px; font-weight: 900; letter-spacing: .18em; color: #2563eb; margin-bottom: 8px !important; }
 .collection-hero { text-align: center; }
 .collection-status { margin-top: 12px !important; font-weight: 700; color: #111827 !important; }
 .collection-hero .nav { justify-content: center; }
+/* 恐竜カードを横並びグリッドで表示するエリア */
 .collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; margin-top: 18px; }
+/* 恐竜カード1枚分。角丸・影・余白などを調整します。 */
 .collection-item { background: white; border: 1px solid #e5e7eb; border-radius: 18px; padding: 14px; box-shadow: 0 10px 28px rgba(15,23,42,.08); display: grid; gap: 10px; transition: transform .18s ease, opacity .18s ease; }
 .collection-item:active { transform: scale(.97); }
+/* 未収集カードは薄くグレー表示にします。 */
 .collection-item.locked { opacity: .55; filter: grayscale(1); }
 .collection-thumb-wrap { position: relative; aspect-ratio: 1 / 1; border-radius: 14px; overflow: hidden; background: #f9fafb; border: 1px solid #e5e7eb; }
 .collection-thumb-wrap img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
@@ -47,16 +54,20 @@ button:disabled, .button.disabled { background: #94a3b8; box-shadow: none; curso
 .collection-item h3 { margin: 0; color: #f97316; font-size: 16px; }
 .collection-item p { margin: 0; color: #4b5563; font-size: 13px; line-height: 1.55; }
 .collection-item .button { width: 100%; min-height: 40px; padding: 9px 12px; }
+/* 詳細モーダル全体。openクラスが付くと表示されます。 */
 .modal { display: none; position: fixed; inset: 0; z-index: 10000; }
 .modal.open { display: block; }
 .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.82); }
+/* モーダルの白いカード部分。幅や高さを変えるならここ。 */
 .modal-card { position: relative; width: min(460px, calc(100vw - 28px)); max-height: calc(100vh - 40px); overflow: auto; margin: 20px auto; background: white; border-radius: 24px; padding: 18px; box-shadow: 0 22px 70px rgba(0,0,0,.35); text-align: center; }
 .modal-close { position: absolute; top: 8px; right: 8px; width: 42px; height: 42px; min-height: 42px; padding: 0; border-radius: 50%; background: #f97316; color: white; font-size: 28px; line-height: 1; z-index: 2; box-shadow: 0 8px 20px rgba(249,115,22,.35); }
+/* 3Dモデル表示エリア。モデル表示が狭い場合は height を増やします。 */
 .modal-model { height: 300px; border-radius: 18px; overflow: hidden; background: #f8fafc; border: 1px solid #e5e7eb; margin-bottom: 12px; }
 .modal-model a-scene { width: 100%; height: 100%; }
 #modal-title { margin: 10px 0 8px; color: #111827; }
 #modal-description { color: #4b5563; line-height: 1.7; text-align: left; }
 .modal-card .actions { justify-content: center; }
+/* スマホ幅のときだけ適用される調整です。 */
 @media (max-width: 520px) {
   .page { padding: 14px; }
   .collection-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }

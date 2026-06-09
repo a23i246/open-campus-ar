@@ -22,6 +22,19 @@
 
 恐竜名や説明を変える場合は、`js/dinosaurs.js` を編集してください。
 
+
+## 友人がコレクションページを編集する場合
+
+コメントを多めに入れたファイルは以下です。
+
+- `collection.html`: 画面のHTML構造
+- `js/dinosaurs.js`: 恐竜データの対応表
+- `js/collection-page.js`: カード表示・詳細モーダル・リセット処理
+- `js/collection.js`: コレクション保存処理
+- `css/common.css`: カードやモーダルの見た目
+
+詳しくは `COLLECTION_EDIT_GUIDE.md` を見てください。
+
 ## 起動方法
 
 ローカルで確認するときは、直接HTMLを開かず、簡易サーバーを使ってください。
