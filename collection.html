@@ -67,8 +67,9 @@
           <a-entity light="type: ambient; intensity: 1.5"></a-entity>
           <a-entity light="type: directional; intensity: 0.9" position="1 3 2"></a-entity>
 
-          <!-- ここに3Dモデルを表示します。位置や大きさは js/dinosaurs.js の値で上書きされます。 -->
-          <a-entity id="modal-model" position="0 -0.6 -3" scale="0.7 0.7 0.7" rotation="0 0 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 9000"></a-entity>
+          <!-- ここに3Dモデルを表示します。位置・大きさ・向きは js/dinosaurs.js と collection-page.js で設定します。 -->
+          <!-- 自動回転はしません。指で左右にフリックしたときだけ、Y軸方向に回転します。 -->
+          <a-entity id="modal-model" position="0 -0.6 -3" scale="0.7 0.7 0.7" rotation="0 0 0"></a-entity>
 
           <!-- 3Dモデルを見るためのカメラです。基本触らなくてOKです。 -->
           <a-entity camera position="0 1.1 3.5"></a-entity>
@@ -82,6 +83,7 @@
         <a class="button" id="modal-link" href="#" target="_blank" rel="noopener">詳細を見る</a>
         <button class="button light" type="button" data-close-modal>閉じる</button>
       </div>
+      <p class="small">モデル部分を左右にフリックすると、横方向だけ回転できます。</p>
       <p class="small">3D表示が重い端末では、一覧カードだけで確認してください。</p>
     </section>
   </div>

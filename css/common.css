@@ -74,3 +74,14 @@ button:disabled, .button.disabled { background: #94a3b8; box-shadow: none; curso
   .collection-item { padding: 10px; border-radius: 16px; }
   .modal-model { height: 250px; }
 }
+
+/* 3Dモデルの横回転操作用。
+   touch-action: none にすると、モデル枠の上で指を動かしたときにページ側のスクロールが邪魔しにくくなります。 */
+#modal-model-wrap {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+#modal-model-wrap:active {
+  cursor: grabbing;
+}

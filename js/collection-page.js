@@ -1,5 +1,12 @@
 // collection.html 専用の処理です。
-// 役割：コレクション一覧を表示する、カード詳細を開く、リセットする。
+// 役割：コレクション一覧を表示する、カード詳細を開く、3Dモデルを横回転させる、リセットする。
+
+// =========================================================
+// 3Dモデルの横回転用の状態管理
+// =========================================================
+// 「現在のY方向の回転角度」を保存しておく変数です。
+// A-Frameの rotation は「X Y Z」の順番で、Yだけ変えると横回転になります。
+let modalModelRotationY = 0;
 
 function renderCollection() {
   // 恐竜カードを入れる場所です。collection.html の id="collection-root" と対応しています。
@@ -81,6 +88,10 @@ function openDetail(id) {
     // これをしないと、前に開いた恐竜が残る場合があります。
     model.removeAttribute('gltf-model');
 
+    // 念のため自動回転アニメーションも外します。
+    // 今回は「指で左右に動かしたときだけ回転する」仕様にしています。
+    model.removeAttribute('animation');
+
     // GLBファイルのパスを設定します。dino.model は js/dinosaurs.js にあります。
     asset.setAttribute('src', dino.model);
 
@@ -88,6 +99,14 @@ function openDetail(id) {
     // モデルが大きすぎる/小さすぎる場合は js/dinosaurs.js の collectionScale を調整します。
     model.setAttribute('scale', dino.collectionScale || '0.7 0.7 0.7');
     model.setAttribute('position', dino.collectionPosition || '0 -0.6 -3');
+
+    // 最初に表示する向きです。
+    // 正面がずれている恐竜は js/dinosaurs.js の collectionRotation を変えると調整できます。
+    // 例：collectionRotation: '0 180 0'
+    const startRotation = dino.collectionRotation || '0 0 0';
+    const parts = startRotation.split(' ').map(Number);
+    modalModelRotationY = Number.isFinite(parts[1]) ? parts[1] : 0;
+    model.setAttribute('rotation', startRotation);
 
     // 次の描画タイミングで3Dモデルを読み込みます。
     requestAnimationFrame(() => model.setAttribute('gltf-model', `url(${dino.model})`));
@@ -116,10 +135,62 @@ function closeDetail() {
   }
 }
 
+function setupModelSwipeRotation() {
+  // 3Dモデルを表示している枠です。
+  // この枠の上で左右にドラッグ/フリックしたときだけ、モデルを横回転させます。
+  const wrap = document.getElementById('modal-model-wrap');
+  const model = document.getElementById('modal-model');
+  if (!wrap || !model) return;
+
+  let isDragging = false;
+  let lastX = 0;
+
+  wrap.addEventListener('pointerdown', (event) => {
+    isDragging = true;
+    lastX = event.clientX;
+
+    // 指が枠から少し外れても、動きを取り続けるための設定です。
+    wrap.setPointerCapture?.(event.pointerId);
+  });
+
+  wrap.addEventListener('pointermove', (event) => {
+    if (!isDragging) return;
+
+    // 左右にどれだけ動いたかを計算します。
+    const diffX = event.clientX - lastX;
+    lastX = event.clientX;
+
+    // 横移動量をY回転角度に変換します。
+    // 数字を大きくするとよく回り、小さくするとゆっくり回ります。
+    modalModelRotationY += diffX * 0.55;
+
+    // XとZは0のままにして、Yだけ変えます。
+    // これで上下には倒れず、横方向だけ回転します。
+    model.setAttribute('rotation', `0 ${modalModelRotationY} 0`);
+
+    // モデル操作中にページが横に引っ張られるのを防ぎます。
+    event.preventDefault();
+  });
+
+  function stopDrag(event) {
+    isDragging = false;
+    if (event?.pointerId !== undefined) {
+      wrap.releasePointerCapture?.(event.pointerId);
+    }
+  }
+
+  wrap.addEventListener('pointerup', stopDrag);
+  wrap.addEventListener('pointercancel', stopDrag);
+  wrap.addEventListener('pointerleave', stopDrag);
+}
+
 // HTMLの読み込みが終わってから実行します。
 window.addEventListener('DOMContentLoaded', () => {
   // 最初にカード一覧を表示します。
   renderCollection();
+
+  // 3Dモデルを指で横回転できるようにします。
+  setupModelSwipeRotation();
 
   // クリック処理をまとめて管理します。
   document.addEventListener('click', (event) => {
