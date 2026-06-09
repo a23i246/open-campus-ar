@@ -66,8 +66,8 @@ function openDetail(id) {
   const title = document.getElementById('modal-title');
   const description = document.getElementById('modal-description');
   const link = document.getElementById('modal-link');
-  const asset = document.getElementById('modal-model-asset');
   const model = document.getElementById('modal-model');
+  const scene = document.querySelector('#modal-model-wrap a-scene');
 
   // タイトルと説明文を、選択した恐竜の内容に変更します。
   if (title) title.textContent = dino.name;
@@ -83,50 +83,45 @@ function openDetail(id) {
     }
   }
 
-  if (asset && model) {
-    // いったん前のモデルを外してから、新しいモデルを入れます。
-    // これをしないと、前に開いた恐竜が残る場合があります。
-    model.removeAttribute('gltf-model');
+  // 先にモーダルを表示します。
+  // 重要：A-Frameは非表示状態のまま読み込むと、3D表示用canvasが0pxになって何も出ないことがあります。
+  if (modal) {
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
 
-    // 念のため自動回転アニメーションも外します。
-    // 今回は「指で左右に動かしたときだけ回転する」仕様にしています。
+  if (model) {
+    // 前回開いたモデルをいったん外します。
+    model.removeAttribute('gltf-model');
     model.removeAttribute('animation');
 
-    // GLBファイルのパスを設定します。dino.model は js/dinosaurs.js にあります。
-    asset.setAttribute('src', dino.model);
-
     // コレクション画面用の大きさ・位置を設定します。
-    // モデルが大きすぎる/小さすぎる場合は js/dinosaurs.js の collectionScale を調整します。
     model.setAttribute('scale', dino.collectionScale || '0.7 0.7 0.7');
     model.setAttribute('position', dino.collectionPosition || '0 -0.6 -3');
 
-    // 最初に表示する向きです。
-    // 正面がずれている恐竜は js/dinosaurs.js の collectionRotation を変えると調整できます。
-    // 例：collectionRotation: '0 180 0'
+    // 最初に表示する向きです。正面がずれる場合は js/dinosaurs.js の collectionRotation を調整します。
     const startRotation = dino.collectionRotation || '0 0 0';
     const parts = startRotation.split(' ').map(Number);
     modalModelRotationY = Number.isFinite(parts[1]) ? parts[1] : 0;
     model.setAttribute('rotation', startRotation);
 
-    // 次の描画タイミングで3Dモデルを読み込みます。
-    requestAnimationFrame(() => model.setAttribute('gltf-model', `url(${dino.model})`));
-  }
+    // モーダルが開いてから、次の描画タイミングでA-Frameにサイズ再計算させます。
+    // これがないと、白い枠だけ出てモデルが出ない端末があります。
+    requestAnimationFrame(() => {
+      if (scene?.resize) scene.resize();
+      model.setAttribute('gltf-model', `url(${dino.model})`);
 
-  // モーダルを表示状態にします。
-  if (modal) {
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
+      // 念のため少し遅らせてもう一度リサイズします。スマホ対策です。
+      setTimeout(() => scene?.resize?.(), 150);
+    });
   }
 }
 
 function closeDetail() {
   const modal = document.getElementById('detail-modal');
   const model = document.getElementById('modal-model');
-  const asset = document.getElementById('modal-model-asset');
-
   // 閉じるときに3Dモデルを外します。スマホの負荷を少し減らすためです。
   if (model) model.removeAttribute('gltf-model');
-  if (asset) asset.removeAttribute('src');
 
   // モーダルを非表示にします。
   if (modal) {
