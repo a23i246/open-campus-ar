@@ -73,14 +73,56 @@
       } catch (e) {}
     }
 
+    // 右側の黒帯対策：MutationObserverや毎フレーム補正は使わない。
+    // AR.jsのstyleと競合してチカチカしたため、読み込み時・向き変更時だけ最小限に直す。
+    function applyARCameraFitOnce() {
+      const videos = document.querySelectorAll('video, #arjs-video, .arjs-video');
+      const canvases = document.querySelectorAll('a-scene canvas, canvas.a-canvas, .a-canvas');
+      const vw = `${window.innerWidth}px`;
+      const vh = `${window.innerHeight}px`;
+
+      videos.forEach((video) => {
+        video.style.setProperty('position', 'fixed', 'important');
+        video.style.setProperty('left', '0px', 'important');
+        video.style.setProperty('top', '0px', 'important');
+        video.style.setProperty('right', 'auto', 'important');
+        video.style.setProperty('bottom', 'auto', 'important');
+        video.style.setProperty('width', vw, 'important');
+        video.style.setProperty('height', vh, 'important');
+        video.style.setProperty('min-width', vw, 'important');
+        video.style.setProperty('min-height', vh, 'important');
+        video.style.setProperty('max-width', 'none', 'important');
+        video.style.setProperty('max-height', 'none', 'important');
+        video.style.setProperty('object-fit', 'cover', 'important');
+        video.style.setProperty('object-position', 'center center', 'important');
+        video.style.setProperty('transform', 'none', 'important');
+        video.style.setProperty('z-index', '0', 'important');
+      });
+
+      canvases.forEach((canvas) => {
+        canvas.style.setProperty('position', 'fixed', 'important');
+        canvas.style.setProperty('left', '0px', 'important');
+        canvas.style.setProperty('top', '0px', 'important');
+        canvas.style.setProperty('width', vw, 'important');
+        canvas.style.setProperty('height', vh, 'important');
+        canvas.style.setProperty('background', 'transparent', 'important');
+        canvas.style.setProperty('z-index', '2', 'important');
+      });
+
+      makeRendererTransparent();
+    }
+
     window.addEventListener('load', () => {
       const scene = document.querySelector('a-scene');
-      makeRendererTransparent();
-      scene?.addEventListener('loaded', makeRendererTransparent);
-      scene?.addEventListener('renderstart', makeRendererTransparent);
-      setTimeout(makeRendererTransparent, 500);
-      setTimeout(makeRendererTransparent, 1500);
+      applyARCameraFitOnce();
+      scene?.addEventListener('loaded', applyARCameraFitOnce);
+      scene?.addEventListener('renderstart', applyARCameraFitOnce);
+      setTimeout(applyARCameraFitOnce, 500);
+      setTimeout(applyARCameraFitOnce, 1500);
     });
+
+    window.addEventListener('resize', () => setTimeout(applyARCameraFitOnce, 250));
+    window.addEventListener('orientationchange', () => setTimeout(applyARCameraFitOnce, 650));
   </script>
 
   <style>

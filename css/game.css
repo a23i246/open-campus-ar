@@ -9,6 +9,8 @@ body.game-page-body {
   color: white;
   overscroll-behavior: none;
   touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 #game-shell {
@@ -16,23 +18,24 @@ body.game-page-body {
   height: 100dvh;
   min-height: 100vh;
   display: grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   background: #050816;
 }
 
 #game-container {
   position: relative;
   width: 100%;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   background: #050816;
 }
 
 #game-container canvas {
   display: block;
+  width: 100% !important;
+  height: 100% !important;
   max-width: 100%;
   max-height: 100%;
   touch-action: none;
@@ -54,12 +57,12 @@ body.game-page-body {
 #title-ui h1 {
   margin: 0;
   color: #ff77aa;
-  font-size: clamp(24px, 7vw, 42px);
+  font-size: clamp(23px, 7vw, 40px);
   text-shadow: 0 0 10px #ff77aa, 0 0 20px #ff77aa, 0 0 40px #ff77aa;
 }
 
 #title-ui .blink {
-  margin: 28px 0 0;
+  margin: 26px 0 0;
   color: white;
   font-size: clamp(18px, 5vw, 24px);
   animation: blink 1.2s infinite;
@@ -69,6 +72,7 @@ body.game-page-body {
   margin: 12px 0 0;
   color: rgba(255,255,255,.82);
   font-size: 13px;
+  line-height: 1.6;
 }
 
 @keyframes blink {
@@ -80,9 +84,9 @@ body.game-page-body {
   position: relative;
   z-index: 20;
   display: grid;
-  gap: 8px;
-  padding: 10px max(12px, env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right));
-  background: rgba(5, 8, 22, .94);
+  gap: 6px;
+  padding: 7px max(12px, env(safe-area-inset-left)) calc(7px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right));
+  background: rgba(5, 8, 22, .96);
   border-top: 1px solid rgba(255,255,255,.16);
   backdrop-filter: blur(10px);
 }
@@ -96,9 +100,7 @@ body.game-page-body {
   color: rgba(255,255,255,.82);
 }
 
-.download-mini-status strong {
-  color: white;
-}
+.download-mini-status strong { color: white; }
 
 .mini-progress-track {
   width: 100%;
@@ -117,13 +119,19 @@ body.game-page-body {
 
 .game-actions {
   display: flex;
-  gap: 8px;
+  gap: 7px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .game-actions .button {
-  min-height: 38px;
-  padding: 8px 13px;
+  min-height: 34px;
+  padding: 7px 12px;
   font-size: 13px;
+}
+
+@media (max-height: 680px) {
+  .game-bottom-panel { gap: 4px; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom)); }
+  .download-mini-status { font-size: 12px; }
+  .game-actions .button { min-height: 30px; padding: 5px 10px; font-size: 12px; }
 }
