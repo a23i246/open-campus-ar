@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-campus-ar-zavacephale-v5';
+const CACHE_NAME = 'open-campus-ar-waiting-game-v6';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -7,12 +7,15 @@ const CORE_ASSETS = [
   './game.html',
   './css/common.css',
   './css/ar.css',
+  './css/game.css',
   './js/dinosaurs.js',
   './js/collection.js',
   './js/preload.js',
   './js/ar-main.js',
   './js/collection-page.js',
-  './js/game.js'
+  './js/game-assets/p5.js',
+  './js/game-assets/class.js',
+  './js/game-assets/sketch.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -34,8 +37,6 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   const isHtml = request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/');
 
-  // HTML/JS/CSSは更新が反映されやすいように network-first。
-  // 画像・モデルは大きいので cache-first。
   if (isHtml || url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
     event.respondWith(
       fetch(request).then((response) => {

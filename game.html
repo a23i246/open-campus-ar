@@ -1,21 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>オープンキャンパス待ち時間ゲーム</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="p5.js"></script>
-  <script src="class.js"></script>
-  <script src="sketch.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>待ち時間ミニゲーム - 恐竜ARスタンプラリー</title>
+  <meta name="theme-color" content="#111827">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/game.css">
+  <script src="js/dinosaurs.js"></script>
+  <script defer src="js/preload.js"></script>
+  <script defer src="js/game-assets/p5.js"></script>
+  <script defer src="js/game-assets/class.js"></script>
+  <script defer src="js/game-assets/sketch.js"></script>
 </head>
-<body>
-  <div id="game-wrap">
-    <div id="game-container"></div>
-    <div id="title-ui">
-      <h1>スターダストクルセイダース</h1>
-      <p class="blink">- TAP / PRESS ENTER -</p>
-      <p class="mobile-help">スマホ：画面を押したまま動かして移動・自動ショット</p>
+<body class="game-page-body">
+  <div id="game-shell">
+    <div id="game-container">
+      <div id="title-ui">
+        <h1>スターダストクルセイダース</h1>
+        <p class="blink">- TAP START -</p>
+        <p class="title-help">スマホ：指で移動 / 押している間ショット</p>
+      </div>
+    </div>
+
+    <div class="game-bottom-panel">
+      <div class="download-mini-status">
+        <span>モデル：</span><strong data-download-status>ダウンロード進行中</strong>
+      </div>
+      <div class="mini-progress-track"><div class="mini-progress-fill" data-progress-bar></div></div>
+      <div class="game-actions">
+        <a class="button light" href="index.html">元のページに戻る</a>
+        <a class="button" data-requires-cache href="ar.html?allsafe=2" aria-disabled="true">ARカメラを起動する</a>
+      </div>
     </div>
   </div>
 </body>

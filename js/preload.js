@@ -1,5 +1,7 @@
-const CACHE_READY_KEY = 'oc_cache_ready_v4';
-const CACHE_TIME_KEY = 'oc_cache_time_v4';
+
+const CACHE_READY_KEY = 'oc_cache_ready_v6';
+const CACHE_TIME_KEY = 'oc_cache_time_v6';
+const CACHE_PROGRESS_KEY = 'oc_cache_progress_v6';
 
 function getPreloadTargets() {
   const commonFiles = [
@@ -9,11 +11,15 @@ function getPreloadTargets() {
     'game.html',
     'css/common.css',
     'css/ar.css',
+    'css/game.css',
     'js/dinosaurs.js',
     'js/collection.js',
+    'js/preload.js',
     'js/ar-main.js',
     'js/collection-page.js',
-    'js/game.js',
+    'js/game-assets/p5.js',
+    'js/game-assets/class.js',
+    'js/game-assets/sketch.js',
     'sw.js'
   ];
 
@@ -31,27 +37,42 @@ function getPreloadTargets() {
   return [...new Set([...commonFiles, ...dinoFiles, ...trialFiles])];
 }
 
-function updatePreloadUI(done, total, currentName = '') {
+function saveProgress(done, total, complete = false) {
+  localStorage.setItem(CACHE_PROGRESS_KEY, JSON.stringify({ done, total, complete, time: Date.now() }));
+}
+
+function updatePreloadUI(done, total, currentName = '', completeOverride = false) {
   const percent = total === 0 ? 100 : Math.floor((done / total) * 100);
-  const bar = document.querySelector('[data-progress-bar]');
+  const complete = completeOverride || (total > 0 && done >= total && localStorage.getItem(CACHE_READY_KEY) === 'true');
+  const bars = document.querySelectorAll('[data-progress-bar]');
   const text = document.querySelector('[data-progress-text]');
   const count = document.querySelector('[data-progress-count]');
   const current = document.querySelector('[data-progress-current]');
+  const statusItems = document.querySelectorAll('[data-download-status]');
   const readyButtons = document.querySelectorAll('[data-requires-cache]');
 
-  if (bar) bar.style.width = `${percent}%`;
+  bars.forEach((bar) => { bar.style.width = `${percent}%`; });
   if (text) text.textContent = `${percent}%`;
-  if (count) count.textContent = `${done} / ${total} ファイル読み込み完了`;
-  if (current) current.textContent = currentName ? `読み込み中: ${currentName}` : '';
+  if (count) count.textContent = complete ? 'ダウンロード完了' : 'ダウンロード進行中';
+  if (current) current.textContent = currentName && !complete ? `読み込み中: ${currentName}` : '';
+  statusItems.forEach((item) => { item.textContent = complete ? '完了' : 'ダウンロード進行中'; });
 
   readyButtons.forEach((button) => {
+    const disabled = !complete;
     if (button.tagName === 'A') {
-      button.classList.toggle('disabled', done < total);
-      button.setAttribute('aria-disabled', String(done < total));
+      button.classList.toggle('disabled', disabled);
+      button.setAttribute('aria-disabled', String(disabled));
     } else {
-      button.disabled = done < total;
+      button.disabled = disabled;
     }
   });
+}
+
+function applySavedProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CACHE_PROGRESS_KEY) || 'null');
+    if (saved && saved.total) updatePreloadUI(saved.done, saved.total, '', saved.complete);
+  } catch (_) {}
 }
 
 async function registerServiceWorker() {
@@ -68,7 +89,6 @@ async function registerServiceWorker() {
 async function preloadOne(url) {
   const response = await fetch(url, { cache: 'force-cache' });
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-  // Blob化するとキャッシュへの登録と読み込み完了判定が分かりやすい
   await response.blob();
 }
 
@@ -76,7 +96,9 @@ async function preloadAll() {
   const targets = getPreloadTargets();
   let done = 0;
   const failed = [];
+
   updatePreloadUI(done, targets.length);
+  saveProgress(done, targets.length, false);
 
   for (const target of targets) {
     try {
@@ -87,23 +109,26 @@ async function preloadAll() {
       failed.push(target);
     } finally {
       done += 1;
-      updatePreloadUI(done, targets.length, target);
+      const completeNow = failed.length === 0 && done >= targets.length;
+      updatePreloadUI(done, targets.length, target, completeNow);
+      saveProgress(done, targets.length, completeNow);
     }
   }
 
   const result = document.querySelector('[data-preload-result]');
-  const buttons = document.querySelectorAll('[data-requires-cache]');
 
   if (failed.length === 0) {
     localStorage.setItem(CACHE_READY_KEY, 'true');
     localStorage.setItem(CACHE_TIME_KEY, new Date().toISOString());
+    updatePreloadUI(targets.length, targets.length, '', true);
+    saveProgress(targets.length, targets.length, true);
     if (result) {
-      result.textContent = '準備完了です。お試しARに進めます。';
+      result.textContent = 'ダウンロード完了です。ARカメラを起動できます。';
       result.className = 'notice success';
     }
-    buttons.forEach((button) => { button.disabled = false; });
   } else {
     localStorage.setItem(CACHE_READY_KEY, 'false');
+    saveProgress(done, targets.length, false);
     if (result) {
       result.innerHTML = `読み込みに失敗したファイルがあります。会場Wi-Fiに接続して再読み込みしてください。<br><small>${failed.join('<br>')}</small>`;
       result.className = 'notice danger';
@@ -114,12 +139,11 @@ async function preloadAll() {
 window.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('a[data-requires-cache]').forEach((link) => {
     link.addEventListener('click', (event) => {
-      if (link.getAttribute('aria-disabled') === 'true') {
-        event.preventDefault();
-      }
+      if (link.getAttribute('aria-disabled') === 'true') event.preventDefault();
     });
   });
-  updatePreloadUI(0, getPreloadTargets().length);
+
+  applySavedProgress();
   await registerServiceWorker();
   preloadAll();
 });
