@@ -1,25 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>ミニゲーム - 恐竜ARスタンプラリー</title>
-  <link rel="stylesheet" href="css/common.css">
-  <script defer src="js/game.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>オープンキャンパス待ち時間ゲーム</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="p5.js"></script>
+  <script src="class.js"></script>
+  <script src="sketch.js"></script>
 </head>
 <body>
-  <main class="page">
-    <section class="hero">
-      <h1>ミニゲーム</h1>
-      <p>読み込み待ち用の簡易ゲームです。既存のp5.jsゲームがある場合は、このページの中身を差し替えてください。</p>
-      <div class="nav"><a class="button" href="index.html">トップへ戻る</a></div>
-    </section>
-    <section class="card">
-      <div class="game-wrap">
-        <canvas id="mini-game-canvas"></canvas>
-        <div class="game-hud">SCORE <span data-game-score>0</span></div>
-      </div>
-    </section>
-  </main>
+  <div id="game-wrap">
+    <div id="game-container"></div>
+    <div id="title-ui">
+      <h1>スターダストクルセイダース</h1>
+      <p class="blink">- TAP / PRESS ENTER -</p>
+      <p class="mobile-help">スマホ：画面を押したまま動かして移動・自動ショット</p>
+    </div>
+  </div>
 </body>
 </html>
