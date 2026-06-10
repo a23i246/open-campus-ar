@@ -12,6 +12,10 @@ let gameOver = false;
 let gameClear = false;
 let isPointerDown = false;
 let autoShotOnTouch = false;
+let pointerStartX = 0;
+let pointerStartY = 0;
+let playerStartX = 0;
+let playerStartY = 0;
 
 // 赤い追尾敵の撃破数は「今のボス段階用」と「累計」を分ける。
 let redPhaseKillCount = 0;
@@ -62,7 +66,7 @@ function windowResized() {
   resetStars();
   if (player) {
     player.x = constrain(player.x, 22, width - 22);
-    player.y = constrain(player.y, height * 0.45, height - 44);
+    player.y = constrain(player.y, height * 0.38, height - 44);
   }
 }
 
@@ -87,10 +91,18 @@ function isPointerInsideCanvas() {
   return mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height;
 }
 
-function setPlayerByPointer() {
+function getPointerPosition() {
+  if (touches && touches.length > 0) {
+    return { x: touches[0].x, y: touches[0].y };
+  }
+  return { x: mouseX, y: mouseY };
+}
+
+function applyRelativePointerMove() {
   if (!gameStarted || gameOver || gameClear) return;
-  player.x = constrain(mouseX, 22, width - 22);
-  player.y = constrain(mouseY, height * 0.45, height - 44);
+  const p = getPointerPosition();
+  player.x = constrain(playerStartX + (p.x - pointerStartX), 22, width - 22);
+  player.y = constrain(playerStartY + (p.y - pointerStartY), height * 0.38, height - 44);
 }
 
 function startPointerControl() {
@@ -103,16 +115,20 @@ function startPointerControl() {
     resetGame();
     return false;
   }
+  const p = getPointerPosition();
   isPointerDown = true;
   autoShotOnTouch = true;
-  setPlayerByPointer();
+  pointerStartX = p.x;
+  pointerStartY = p.y;
+  playerStartX = player.x;
+  playerStartY = player.y;
   shootPlayerBullet();
   return false;
 }
 
 function movePointerControl() {
   if (!isPointerDown) return true;
-  setPlayerByPointer();
+  applyRelativePointerMove();
   return false;
 }
 
@@ -268,17 +284,23 @@ function updateBullets() {
 function maybeSpawnEnemies() {
   if (isBossBattle) return;
 
-  const spawnEvery = bossLevel === 1 ? 14 : 9; // 2段階目はさらに密度を上げる
+  // 赤玉だけでボスがすぐ出ないように、赤の比率は下げる。
+  // その代わり黄色と紫を増やして、避ける難しさを上げる。
+  const spawnEvery = bossLevel === 1 ? 12 : 8;
   if (frameCount % spawnEvery !== 0) return;
 
   const r = random();
-  if (r < 0.62) enemies.push(new Enemy());          // 赤い追尾敵をかなり多め
-  else if (r < 0.86) enemies.push(new FastEnemy());
+  if (r < 0.23) enemies.push(new Enemy());
+  else if (r < 0.67) enemies.push(new FastEnemy());
   else enemies.push(new BouncerEnemy());
 
-  // 2段階目はたまに追加湧きして、密度を上げる
-  if (bossLevel === 2 && random() < 0.38) {
-    enemies.push(random() < 0.6 ? new Enemy() : new FastEnemy());
+  // 追加湧きは黄色・紫中心。赤カウントを早めすぎず密度だけ上げる。
+  const extraChance = bossLevel === 1 ? 0.32 : 0.55;
+  if (random() < extraChance) {
+    enemies.push(random() < 0.58 ? new FastEnemy() : new BouncerEnemy());
+  }
+  if (bossLevel === 2 && random() < 0.22) {
+    enemies.push(random() < 0.15 ? new Enemy() : (random() < 0.62 ? new FastEnemy() : new BouncerEnemy()));
   }
 }
 

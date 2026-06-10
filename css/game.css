@@ -135,3 +135,29 @@ body.game-page-body {
   .download-mini-status { font-size: 12px; }
   .game-actions .button { min-height: 30px; padding: 5px 10px; font-size: 12px; }
 }
+
+
+.download-back-floating {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left));
+  bottom: calc(82px + env(safe-area-inset-bottom));
+  z-index: 80;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .94);
+  color: #111827;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
+
+@media (max-height: 700px) {
+  .download-back-floating { bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .mini-progress-track { display: none; }
+  .game-actions { display: none; }
+}

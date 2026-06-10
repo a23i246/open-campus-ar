@@ -5,7 +5,7 @@ class Player {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.size = 34;          // 見た目は小さめ
+    this.size = 30;          // 見た目はさらに小さめ
     this.hitRadius = 4;      // 当たり判定は中央の白点だけ
     this.speed = 7.5;
     this.hp = 3;
@@ -147,10 +147,10 @@ class Bullet {
 // 赤い追尾敵。ボス出現条件のカウント対象。
 class Enemy {
   constructor() {
-    this.size = random(15, 20);
+    this.size = random(12, 16);
     this.x = random(24, width - 24);
     this.y = -this.size;
-    this.speed = random(2.2, 3.7);
+    this.speed = random(2.6, 4.2);
     this.scoreValue = 100;
     this.isRedEnemy = true;
   }
@@ -177,10 +177,10 @@ class Enemy {
 // 黄色の高速直進敵。
 class FastEnemy {
   constructor() {
-    this.size = random(12, 17);
+    this.size = random(10, 14);
     this.x = random(20, width - 20);
     this.y = -this.size;
-    this.speed = random(4.5, 7.2);
+    this.speed = random(6.0, 9.4);
     this.scoreValue = 80;
     this.isRedEnemy = false;
   }
@@ -205,11 +205,11 @@ class FastEnemy {
 // 紫の反射弾をばらまく敵。倒せない障害物寄り。
 class BouncerEnemy {
   constructor() {
-    this.size = 12;
+    this.size = random(9, 12);
     this.x = random(40, width - 40);
     this.y = -20;
-    this.vx = random([-1, 1]) * random(2.8, 4.5);
-    this.vy = random(3.2, 5.2);
+    this.vx = random([-1, 1]) * random(3.5, 5.8);
+    this.vy = random(4.2, 6.8);
     this.scoreValue = 120;
     this.isRedEnemy = false;
   }
@@ -266,16 +266,16 @@ class BossBullet {
 // 1体目：前回の入れ替え仕様で、アンパン風ボスを先に出す。
 class Boss2 {
   constructor() {
-    this.x = width / 2;
+    this.x = width * 0.58;
     this.y = -90;
-    this.targetY = max(86, height * 0.17); // 中央すぎないよう上寄せ
+    this.targetY = max(76, height * 0.14); // 中央すぎないよう上寄せ
     this.moveTimer = 0;
     this.scale = 0.28;
     this.maxHp = 34;
     this.hp = this.maxHp;
     this.speed = 2.6;
     this.hitRadius = 52;
-    this.shootInterval = 26;
+    this.shootInterval = 20;
     this.shootTimer = 0;
   }
 
@@ -285,7 +285,7 @@ class Boss2 {
       return;
     }
     this.moveTimer += 0.045;
-    this.x = width / 2 + sin(this.moveTimer) * min(95, width * 0.28);
+    this.x = width * 0.58 + sin(this.moveTimer) * min(110, width * 0.31);
 
     this.shootTimer++;
     if (this.shootTimer >= this.shootInterval) {
@@ -297,7 +297,7 @@ class Boss2 {
   shoot() {
     // 扇状に多め。難易度高め。
     for (let a = -0.75; a <= 0.75; a += 0.375) {
-      bossBullets.push(new BossBullet(this.x, this.y + 42, sin(a) * 3.2, 4.0 + cos(a), 8, 'red'));
+      bossBullets.push(new BossBullet(this.x, this.y + 42, sin(a) * 3.9, 4.8 + cos(a), 8, 'red'));
     }
     if (frameCount % 3 === 0) {
       bossBullets.push(new BossBullet(this.x, this.y + 20, random(-3, 3), random(3.2, 4.6), 9, 'purple'));
@@ -317,17 +317,17 @@ class Boss2 {
 // 2体目：雲ボス。撃破でゲームクリア。
 class Boss1 {
   constructor() {
-    this.x = width / 2;
+    this.x = width * 0.43;
     this.y = -100;
-    this.targetY = max(95, height * 0.18);
-    this.baseX = width / 2;
+    this.targetY = max(82, height * 0.15);
+    this.baseX = width * 0.43;
     this.moveTimer = 0;
     this.scale = 0.34;
     this.maxHp = 70;
     this.hp = this.maxHp;
     this.speed = 3.0;
     this.hitRadius = 62;
-    this.shootInterval = 16;
+    this.shootInterval = 12;
     this.shootTimer = 0;
   }
 
@@ -356,11 +356,11 @@ class Boss1 {
     const d = sqrt(dx * dx + dy * dy) || 1;
 
     // 自機狙い＋横弾＋反射弾でかなり難しくする
-    bossBullets.push(new BossBullet(this.x, this.y + 36, (dx / d) * 5.2, (dy / d) * 5.2, 9, 'blue'));
-    bossBullets.push(new BossBullet(this.x - 36, this.y + 42, -2.5, 5.0, 8, 'red'));
-    bossBullets.push(new BossBullet(this.x + 36, this.y + 42, 2.5, 5.0, 8, 'red'));
+    bossBullets.push(new BossBullet(this.x, this.y + 36, (dx / d) * 6.1, (dy / d) * 6.1, 9, 'blue'));
+    bossBullets.push(new BossBullet(this.x - 36, this.y + 42, -3.2, 5.7, 8, 'red'));
+    bossBullets.push(new BossBullet(this.x + 36, this.y + 42, 3.2, 5.7, 8, 'red'));
     if (frameCount % 2 === 0) {
-      bossBullets.push(new BossBullet(this.x, this.y + 12, random(-4.3, 4.3), random(3.8, 6.0), 10, 'purple'));
+      bossBullets.push(new BossBullet(this.x, this.y + 12, random(-5.1, 5.1), random(4.5, 7.1), 10, 'purple'));
     }
   }
 
