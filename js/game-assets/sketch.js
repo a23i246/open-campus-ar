@@ -112,7 +112,19 @@ function applyRelativePointerMove() {
 function isEventOnGameButton() {
   const event = window.event;
   const target = event && event.target;
-  return !!(target && target.closest && target.closest('.game-top-panel, .game-actions, a, button'));
+  if (target && target.closest && target.closest('.game-top-panel, .game-actions, a, button')) return true;
+
+  // Android Chrome + p5.js では window.event が取れないことがあるため、
+  // 画面上部パネルの高さでも判定して、ボタン操作をゲーム側が奪わないようにする。
+  const panel = document.querySelector('.game-top-panel');
+  if (!panel) return false;
+  const rect = panel.getBoundingClientRect();
+  const x = event && event.changedTouches && event.changedTouches[0] ? event.changedTouches[0].clientX : null;
+  const y = event && event.changedTouches && event.changedTouches[0] ? event.changedTouches[0].clientY : null;
+  if (x !== null && y !== null) {
+    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+  }
+  return false;
 }
 
 function startPointerControl() {

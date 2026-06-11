@@ -36,16 +36,28 @@
   </div>
 
   <script>
-    // p5.js のタッチ処理に邪魔されないよう、上部ボタンは通常リンクとして確実に動かす。
+    // p5.js はスマホの touch 系イベントを強く拾うため、
+    // 上部ナビだけは capture 段階で先に処理して確実に遷移させる。
     document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.js-game-nav').forEach(function (link) {
-        link.addEventListener('touchstart', function (event) { event.stopPropagation(); }, { passive: true });
-        link.addEventListener('pointerdown', function (event) { event.stopPropagation(); });
-        link.addEventListener('click', function (event) {
+        const go = function (event) {
+          event.preventDefault();
           event.stopPropagation();
+          if (event.stopImmediatePropagation) event.stopImmediatePropagation();
           const href = link.getAttribute('href');
-          if (href) window.location.href = href;
-        });
+          if (href) window.location.assign(href);
+        };
+        const stopOnly = function (event) {
+          event.stopPropagation();
+          if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+        };
+
+        link.addEventListener('touchstart', stopOnly, { capture: true, passive: false });
+        link.addEventListener('pointerdown', stopOnly, { capture: true });
+        link.addEventListener('mousedown', stopOnly, { capture: true });
+        link.addEventListener('touchend', go, { capture: true, passive: false });
+        link.addEventListener('pointerup', go, { capture: true });
+        link.addEventListener('click', go, { capture: true });
       });
     });
   </script>
