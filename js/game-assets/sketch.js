@@ -32,9 +32,10 @@ let killCount = 0;
 let score = 0;
 let shakeAmount = 0;
 let enemySpawnLevel = 1;
-let playerRespawnTimer = 0;
 let playerInvincibleTimer = 0;
-let playerExplosion = null;
+let playerHitEffectTimer = 0;
+let playerHitEffectX = 0;
+let playerHitEffectY = 0;
 
 function setup() {
   const size = getGameCanvasSize();
@@ -210,15 +211,12 @@ function draw() {
     if (smokes[i].isDead()) smokes.splice(i, 1);
   }
 
-  updatePlayerRespawn();
-  if (playerRespawnTimer <= 0) {
-    player.update();
-    if (autoShotOnTouch || keyIsDown(32)) shootPlayerBullet();
-    player.draw();
-    drawInvincibleHalo();
-  } else {
-    drawPlayerExplosion();
-  }
+  updatePlayerHitTimers();
+  player.update();
+  if (autoShotOnTouch || keyIsDown(32)) shootPlayerBullet();
+  player.draw();
+  drawPlayerHitEffect();
+  drawInvincibleHalo();
 
   if (isBossBattle && boss) {
     boss.update();
@@ -249,9 +247,10 @@ function resetGame() {
   nextBossNeed = bossRedKillTargets[0];
   isBossBattle = false;
   enemySpawnLevel = 1;
-  playerRespawnTimer = 0;
   playerInvincibleTimer = 0;
-  playerExplosion = null;
+  playerHitEffectTimer = 0;
+  playerHitEffectX = 0;
+  playerHitEffectY = 0;
 
   lastShotTime = 0;
   shakeAmount = 0;
@@ -265,66 +264,47 @@ function resetGame() {
 
 
 function isPlayerVulnerable() {
-  return playerRespawnTimer <= 0 && playerInvincibleTimer <= 0 && !gameOver && !gameClear;
-}
-
-function clearDangerousObjects() {
-  // 被弾した瞬間に画面内の弾・通常敵を全消しして、復帰しやすくする。
-  bossBullets = [];
-  enemies = [];
-  bullets = [];
+  return playerInvincibleTimer <= 0 && !gameOver && !gameClear;
 }
 
 function damagePlayer() {
   if (!isPlayerVulnerable()) return;
 
   player.hp--;
-  shakeAmount = 22;
-  playerExplosion = { x: player.getHitX(), y: player.getHitY(), frame: 0 };
-  clearDangerousObjects();
+  shakeAmount = 18;
+  playerHitEffectTimer = 28;
+  playerHitEffectX = player.getHitX();
+  playerHitEffectY = player.getHitY();
+  playerInvincibleTimer = 72;
 
+  // 固まり対策：被弾しても玉・敵・自機位置は消さず、ゲーム進行も止めない。
+  // HPが0になった時だけゲームオーバーにする。
   if (player.hp <= 0) {
     gameOver = true;
-    playerRespawnTimer = 0;
-    return;
-  }
-
-  // 少しだけ自機を消してから、下側中央付近で復活。復活直後は無敵時間あり。
-  playerRespawnTimer = 42;
-  isPointerDown = false;
-  autoShotOnTouch = false;
-}
-
-function updatePlayerRespawn() {
-  if (playerRespawnTimer > 0) {
-    playerRespawnTimer--;
-    if (playerRespawnTimer === 0) {
-      player.x = width / 2;
-      player.y = height - 76;
-      playerInvincibleTimer = 110;
-      lastShotTime = 0;
-    }
-  } else if (playerInvincibleTimer > 0) {
-    playerInvincibleTimer--;
   }
 }
 
-function drawPlayerExplosion() {
-  if (!playerExplosion) return;
-  playerExplosion.frame++;
-  const f = playerExplosion.frame;
+function updatePlayerHitTimers() {
+  if (playerInvincibleTimer > 0) playerInvincibleTimer--;
+  if (playerHitEffectTimer > 0) playerHitEffectTimer--;
+}
+
+function drawPlayerHitEffect() {
+  if (playerHitEffectTimer <= 0) return;
+  const f = 28 - playerHitEffectTimer;
+  const alpha = map(playerHitEffectTimer, 0, 28, 0, 220);
+
   noFill();
   strokeWeight(3);
-  stroke(255, 210, 80, max(0, 220 - f * 5));
-  circle(playerExplosion.x, playerExplosion.y, f * 4.2);
-  stroke(255, 80, 80, max(0, 190 - f * 5));
-  circle(playerExplosion.x, playerExplosion.y, f * 6.2);
+  stroke(255, 80, 80, alpha);
+  circle(playerHitEffectX, playerHitEffectY, 24 + f * 3.2);
+
+  stroke(255, 230, 80, alpha * 0.8);
+  circle(playerHitEffectX, playerHitEffectY, 12 + f * 2.0);
+
   noStroke();
-  for (let i = 0; i < 9; i++) {
-    const a = TWO_PI * i / 9 + f * 0.08;
-    fill(255, 120, 40, max(0, 200 - f * 5));
-    circle(playerExplosion.x + cos(a) * f * 3.2, playerExplosion.y + sin(a) * f * 3.2, max(2, 9 - f * 0.15));
-  }
+  fill(255, 60, 60, alpha * 0.18);
+  rect(0, 0, width, height);
 }
 
 function drawInvincibleHalo() {
