@@ -323,12 +323,14 @@ class Boss1 {
     this.baseX = width * 0.43;
     this.moveTimer = 0;
     this.scale = 0.34;
-    this.maxHp = 70;
+    // 2体目なのでかなり強め。HPと攻撃頻度を上げる。
+    this.maxHp = 110;
     this.hp = this.maxHp;
-    this.speed = 3.0;
+    this.speed = 3.4;
     this.hitRadius = 62;
-    this.shootInterval = 12;
+    this.shootInterval = 7;
     this.shootTimer = 0;
+    this.spiralAngle = 0;
   }
 
   update() {
@@ -337,9 +339,9 @@ class Boss1 {
       return;
     }
 
-    this.moveTimer += 0.055;
-    this.x = this.baseX + sin(this.moveTimer) * min(120, width * 0.34);
-    this.y = this.targetY + sin(this.moveTimer * 1.7) * 24;
+    this.moveTimer += 0.075;
+    this.x = this.baseX + sin(this.moveTimer) * min(138, width * 0.38);
+    this.y = this.targetY + sin(this.moveTimer * 1.9) * 30;
 
     this.shootTimer++;
     if (this.shootTimer >= this.shootInterval) {
@@ -355,13 +357,26 @@ class Boss1 {
     const dy = py - this.y;
     const d = sqrt(dx * dx + dy * dy) || 1;
 
-    // 自機狙い＋横弾＋反射弾でかなり難しくする
-    bossBullets.push(new BossBullet(this.x, this.y + 36, (dx / d) * 6.1, (dy / d) * 6.1, 9, 'blue'));
-    bossBullets.push(new BossBullet(this.x - 36, this.y + 42, -3.2, 5.7, 8, 'red'));
-    bossBullets.push(new BossBullet(this.x + 36, this.y + 42, 3.2, 5.7, 8, 'red'));
-    if (frameCount % 2 === 0) {
-      bossBullets.push(new BossBullet(this.x, this.y + 12, random(-5.1, 5.1), random(4.5, 7.1), 10, 'purple'));
+    // 2体目ボス強化：高速自機狙い、扇状弾、反射弾、スパイラル弾を混ぜる。
+    bossBullets.push(new BossBullet(this.x, this.y + 36, (dx / d) * 7.4, (dy / d) * 7.4, 9, 'blue'));
+    bossBullets.push(new BossBullet(this.x - 30, this.y + 42, (dx / d) * 5.9 - 1.9, (dy / d) * 5.9, 8, 'red'));
+    bossBullets.push(new BossBullet(this.x + 30, this.y + 42, (dx / d) * 5.9 + 1.9, (dy / d) * 5.9, 8, 'red'));
+
+    // 下方向に広がる扇状弾。白点判定なので密度高めでも避けられる。
+    for (let a = -0.62; a <= 0.62; a += 0.31) {
+      bossBullets.push(new BossBullet(this.x, this.y + 48, sin(a) * 4.6, 5.9 + cos(a) * 1.2, 7, 'red'));
     }
+
+    // 反射弾を増やして、画面内に残る危険地帯を作る。
+    bossBullets.push(new BossBullet(this.x, this.y + 8, random(-6.4, 6.4), random(4.8, 7.8), 10, 'purple'));
+    if (frameCount % 2 === 0) {
+      bossBullets.push(new BossBullet(this.x + random(-50, 50), this.y + 20, random(-5.2, 5.2), random(4.6, 7.0), 9, 'purple'));
+    }
+
+    // スパイラル気味の横切り弾。
+    this.spiralAngle += 0.42;
+    bossBullets.push(new BossBullet(this.x, this.y + 30, cos(this.spiralAngle) * 5.2, 5.4 + sin(this.spiralAngle) * 1.5, 8, 'blue'));
+    bossBullets.push(new BossBullet(this.x, this.y + 30, cos(this.spiralAngle + PI) * 5.2, 5.4 + sin(this.spiralAngle + PI) * 1.5, 8, 'blue'));
   }
 
   draw() {

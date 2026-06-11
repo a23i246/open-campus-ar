@@ -80,6 +80,14 @@ body.game-page-body {
   50% { opacity: 1; }
 }
 
+
+.game-bottom-panel,
+.game-bottom-panel a,
+.game-bottom-panel button {
+  touch-action: manipulation;
+  pointer-events: auto;
+}
+
 .game-bottom-panel {
   position: relative;
   z-index: 20;

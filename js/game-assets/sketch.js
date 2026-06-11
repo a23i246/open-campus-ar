@@ -105,7 +105,14 @@ function applyRelativePointerMove() {
   player.y = constrain(playerStartY + (p.y - pointerStartY), height * 0.38, height - 44);
 }
 
+function isEventOnGameButton() {
+  const event = window.event;
+  const target = event && event.target;
+  return !!(target && target.closest && target.closest('.game-bottom-panel, .game-actions, a, button'));
+}
+
 function startPointerControl() {
+  if (isEventOnGameButton()) return true;
   if (!isPointerInsideCanvas()) return true;
   if (!gameStarted) {
     startGame();
@@ -361,8 +368,9 @@ function updateBossBullets() {
     if (bossBullets[i] && bossBullets[i].offscreen()) bossBullets.splice(i, 1);
   }
 
-  // 反射弾が永遠に増えすぎないように制限
-  if (bossBullets.length > 72) bossBullets.splice(0, bossBullets.length - 72);
+  // 反射弾が永遠に増えすぎないように制限。2体目は弾幕を強くするため上限を増やす。
+  const bulletLimit = bossLevel >= 2 ? 125 : 72;
+  if (bossBullets.length > bulletLimit) bossBullets.splice(0, bossBullets.length - bulletLimit);
 }
 
 function drawHUD() {

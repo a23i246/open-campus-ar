@@ -29,10 +29,25 @@
       </div>
       <div class="mini-progress-track"><div class="mini-progress-fill" data-progress-bar></div></div>
       <div class="game-actions">
-        <a class="button light" href="index.html">元のページに戻る</a>
-        <a class="button" data-requires-cache href="ar.html?allsafe=2" aria-disabled="true">ARカメラを起動する</a>
+        <a class="button light js-game-nav" href="index.html">元のページに戻る</a>
+        <a class="button js-game-nav" href="ar.html?allsafe=2">ARカメラを起動する</a>
       </div>
     </div>
   </div>
+
+  <script>
+    // p5.js のタッチ処理に邪魔されないよう、下部ボタンは通常リンクとして確実に動かす。
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.js-game-nav').forEach(function (link) {
+        link.addEventListener('touchstart', function (event) { event.stopPropagation(); }, { passive: true });
+        link.addEventListener('pointerdown', function (event) { event.stopPropagation(); });
+        link.addEventListener('click', function (event) {
+          event.stopPropagation();
+          const href = link.getAttribute('href');
+          if (href) window.location.href = href;
+        });
+      });
+    });
+  </script>
 </body>
 </html>
