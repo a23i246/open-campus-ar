@@ -268,22 +268,20 @@ function isPlayerVulnerable() {
 }
 
 function damagePlayer() {
-  if (!isPlayerVulnerable()) return false;
-  if (!player || typeof player.hp !== 'number') return false;
+  if (!isPlayerVulnerable()) return;
 
-  // 固まり対策：被弾時にゲーム進行を止める処理は一切しない。
-  // 自機を消す・全弾消し・復活待ち・強い画面揺れは使わず、表示演出と短い無敵だけにする。
-  player.hp = max(0, player.hp - 1);
-  shakeAmount = 5;
-  playerHitEffectTimer = 20;
+  player.hp--;
+  shakeAmount = 18;
+  playerHitEffectTimer = 28;
   playerHitEffectX = player.getHitX();
   playerHitEffectY = player.getHitY();
-  playerInvincibleTimer = 90;
+  playerInvincibleTimer = 72;
 
+  // 固まり対策：被弾しても玉・敵・自機位置は消さず、ゲーム進行も止めない。
+  // HPが0になった時だけゲームオーバーにする。
   if (player.hp <= 0) {
     gameOver = true;
   }
-  return true;
 }
 
 function updatePlayerHitTimers() {
@@ -293,19 +291,20 @@ function updatePlayerHitTimers() {
 
 function drawPlayerHitEffect() {
   if (playerHitEffectTimer <= 0) return;
-  const f = 20 - playerHitEffectTimer;
-  const alpha = map(playerHitEffectTimer, 0, 20, 0, 210);
+  const f = 28 - playerHitEffectTimer;
+  const alpha = map(playerHitEffectTimer, 0, 28, 0, 220);
 
-  // 軽いリング演出だけ。全面塗りつぶしは端末によって重く見えるため使わない。
   noFill();
   strokeWeight(3);
   stroke(255, 80, 80, alpha);
-  circle(playerHitEffectX, playerHitEffectY, 22 + f * 3.0);
+  circle(playerHitEffectX, playerHitEffectY, 24 + f * 3.2);
 
   stroke(255, 230, 80, alpha * 0.8);
-  circle(playerHitEffectX, playerHitEffectY, 12 + f * 1.8);
+  circle(playerHitEffectX, playerHitEffectY, 12 + f * 2.0);
 
   noStroke();
+  fill(255, 60, 60, alpha * 0.18);
+  rect(0, 0, width, height);
 }
 
 function drawInvincibleHalo() {
@@ -408,9 +407,7 @@ function updateEnemies() {
     }
 
     if (enemies[i] && isPlayerVulnerable() && player.hit(enemies[i])) {
-      // 全消しはしないが、接触した敵だけは消して、同じ敵で連続被弾して固まったように見えるのを防ぐ。
       damagePlayer();
-      enemies.splice(i, 1);
       continue;
     }
 
@@ -423,10 +420,8 @@ function updateBossBullets() {
     bossBullets[i].update();
     bossBullets[i].draw();
 
-    if (bossBullets[i] && isPlayerVulnerable() && player.hitCircle(bossBullets[i].x, bossBullets[i].y, bossBullets[i].size / 2)) {
-      // 全弾消しはしないが、当たった弾だけ消して、同じ弾で即連続ヒットしないようにする。
+    if (isPlayerVulnerable() && player.hitCircle(bossBullets[i].x, bossBullets[i].y, bossBullets[i].size / 2)) {
       damagePlayer();
-      bossBullets.splice(i, 1);
       continue;
     }
 
