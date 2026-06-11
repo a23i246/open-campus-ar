@@ -32,6 +32,9 @@ let killCount = 0;
 let score = 0;
 let shakeAmount = 0;
 let enemySpawnLevel = 1;
+let playerRespawnTimer = 0;
+let playerInvincibleTimer = 0;
+let playerExplosion = null;
 
 function setup() {
   const size = getGameCanvasSize();
@@ -108,7 +111,7 @@ function applyRelativePointerMove() {
 function isEventOnGameButton() {
   const event = window.event;
   const target = event && event.target;
-  return !!(target && target.closest && target.closest('.game-bottom-panel, .game-actions, a, button'));
+  return !!(target && target.closest && target.closest('.game-top-panel, .game-actions, a, button'));
 }
 
 function startPointerControl() {
@@ -207,9 +210,15 @@ function draw() {
     if (smokes[i].isDead()) smokes.splice(i, 1);
   }
 
-  player.update();
-  if (autoShotOnTouch || keyIsDown(32)) shootPlayerBullet();
-  player.draw();
+  updatePlayerRespawn();
+  if (playerRespawnTimer <= 0) {
+    player.update();
+    if (autoShotOnTouch || keyIsDown(32)) shootPlayerBullet();
+    player.draw();
+    drawInvincibleHalo();
+  } else {
+    drawPlayerExplosion();
+  }
 
   if (isBossBattle && boss) {
     boss.update();
@@ -240,6 +249,9 @@ function resetGame() {
   nextBossNeed = bossRedKillTargets[0];
   isBossBattle = false;
   enemySpawnLevel = 1;
+  playerRespawnTimer = 0;
+  playerInvincibleTimer = 0;
+  playerExplosion = null;
 
   lastShotTime = 0;
   shakeAmount = 0;
@@ -249,6 +261,80 @@ function resetGame() {
 
   const title = document.getElementById('title-ui');
   if (title) title.style.display = 'none';
+}
+
+
+function isPlayerVulnerable() {
+  return playerRespawnTimer <= 0 && playerInvincibleTimer <= 0 && !gameOver && !gameClear;
+}
+
+function clearDangerousObjects() {
+  // 被弾した瞬間に画面内の弾・通常敵を全消しして、復帰しやすくする。
+  bossBullets = [];
+  enemies = [];
+  bullets = [];
+}
+
+function damagePlayer() {
+  if (!isPlayerVulnerable()) return;
+
+  player.hp--;
+  shakeAmount = 22;
+  playerExplosion = { x: player.getHitX(), y: player.getHitY(), frame: 0 };
+  clearDangerousObjects();
+
+  if (player.hp <= 0) {
+    gameOver = true;
+    playerRespawnTimer = 0;
+    return;
+  }
+
+  // 少しだけ自機を消してから、下側中央付近で復活。復活直後は無敵時間あり。
+  playerRespawnTimer = 42;
+  isPointerDown = false;
+  autoShotOnTouch = false;
+}
+
+function updatePlayerRespawn() {
+  if (playerRespawnTimer > 0) {
+    playerRespawnTimer--;
+    if (playerRespawnTimer === 0) {
+      player.x = width / 2;
+      player.y = height - 76;
+      playerInvincibleTimer = 110;
+      lastShotTime = 0;
+    }
+  } else if (playerInvincibleTimer > 0) {
+    playerInvincibleTimer--;
+  }
+}
+
+function drawPlayerExplosion() {
+  if (!playerExplosion) return;
+  playerExplosion.frame++;
+  const f = playerExplosion.frame;
+  noFill();
+  strokeWeight(3);
+  stroke(255, 210, 80, max(0, 220 - f * 5));
+  circle(playerExplosion.x, playerExplosion.y, f * 4.2);
+  stroke(255, 80, 80, max(0, 190 - f * 5));
+  circle(playerExplosion.x, playerExplosion.y, f * 6.2);
+  noStroke();
+  for (let i = 0; i < 9; i++) {
+    const a = TWO_PI * i / 9 + f * 0.08;
+    fill(255, 120, 40, max(0, 200 - f * 5));
+    circle(playerExplosion.x + cos(a) * f * 3.2, playerExplosion.y + sin(a) * f * 3.2, max(2, 9 - f * 0.15));
+  }
+}
+
+function drawInvincibleHalo() {
+  if (playerInvincibleTimer <= 0) return;
+  if (frameCount % 8 >= 4) return;
+  noFill();
+  stroke(120, 220, 255, 180);
+  strokeWeight(2);
+  circle(player.getHitX(), player.getHitY(), 34);
+  noStroke();
 }
 
 function updateBullets() {
@@ -340,11 +426,8 @@ function updateEnemies() {
       }
     }
 
-    if (enemies[i] && player.hit(enemies[i])) {
-      shakeAmount = 14;
-      player.hp--;
-      enemies.splice(i, 1);
-      if (player.hp <= 0) gameOver = true;
+    if (enemies[i] && isPlayerVulnerable() && player.hit(enemies[i])) {
+      damagePlayer();
       continue;
     }
 
@@ -357,11 +440,8 @@ function updateBossBullets() {
     bossBullets[i].update();
     bossBullets[i].draw();
 
-    if (player.hitCircle(bossBullets[i].x, bossBullets[i].y, bossBullets[i].size / 2)) {
-      player.hp--;
-      shakeAmount = 16;
-      bossBullets.splice(i, 1);
-      if (player.hp <= 0) gameOver = true;
+    if (isPlayerVulnerable() && player.hitCircle(bossBullets[i].x, bossBullets[i].y, bossBullets[i].size / 2)) {
+      damagePlayer();
       continue;
     }
 

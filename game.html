@@ -15,15 +15,7 @@
 </head>
 <body class="game-page-body">
   <div id="game-shell">
-    <div id="game-container">
-      <div id="title-ui">
-        <h1>スターダストクルセイダース</h1>
-        <p class="blink">- TAP START -</p>
-        <p class="title-help">縦型：白い点だけが当たり判定 / 指を動かした分だけ移動</p>
-      </div>
-    </div>
-
-    <div class="game-bottom-panel">
+    <div class="game-top-panel">
       <div class="download-mini-status">
         <span>モデル：</span><strong data-download-status>ダウンロード進行中</strong>
       </div>
@@ -33,10 +25,18 @@
         <a class="button js-game-nav" href="ar.html?allsafe=2">ARカメラを起動する</a>
       </div>
     </div>
+
+    <div id="game-container">
+      <div id="title-ui">
+        <h1>スターダストクルセイダース</h1>
+        <p class="blink">- TAP START -</p>
+        <p class="title-help">縦型：白い点だけが当たり判定 / 指を動かした分だけ移動</p>
+      </div>
+    </div>
   </div>
 
   <script>
-    // p5.js のタッチ処理に邪魔されないよう、下部ボタンは通常リンクとして確実に動かす。
+    // p5.js のタッチ処理に邪魔されないよう、上部ボタンは通常リンクとして確実に動かす。
     document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.js-game-nav').forEach(function (link) {
         link.addEventListener('touchstart', function (event) { event.stopPropagation(); }, { passive: true });

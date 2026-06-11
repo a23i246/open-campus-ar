@@ -18,7 +18,7 @@ body.game-page-body {
   height: 100dvh;
   min-height: 100vh;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
   background: #050816;
 }
 
@@ -81,21 +81,21 @@ body.game-page-body {
 }
 
 
-.game-bottom-panel,
-.game-bottom-panel a,
-.game-bottom-panel button {
+.game-top-panel,
+.game-top-panel a,
+.game-top-panel button {
   touch-action: manipulation;
   pointer-events: auto;
 }
 
-.game-bottom-panel {
+.game-top-panel {
   position: relative;
   z-index: 20;
   display: grid;
   gap: 6px;
-  padding: 7px max(12px, env(safe-area-inset-left)) calc(7px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right));
+  padding: calc(7px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-left)) 7px max(12px, env(safe-area-inset-right));
   background: rgba(5, 8, 22, .96);
-  border-top: 1px solid rgba(255,255,255,.16);
+  border-bottom: 1px solid rgba(255,255,255,.16);
   backdrop-filter: blur(10px);
 }
 
@@ -139,7 +139,7 @@ body.game-page-body {
 }
 
 @media (max-height: 680px) {
-  .game-bottom-panel { gap: 4px; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom)); }
+  .game-top-panel { gap: 4px; padding-top: calc(5px + env(safe-area-inset-top)); padding-bottom: 5px; }
   .download-mini-status { font-size: 12px; }
   .game-actions .button { min-height: 30px; padding: 5px 10px; font-size: 12px; }
 }
