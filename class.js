@@ -234,7 +234,7 @@ class Boss2 {
 
 
     this.scale = 0.4;   // ← 見た目サイズ
-    this.hp = 30;
+    this.hp = 3;
     this.speed = 1.5;
 
     this.hitRadius = 80; // ← 当たり判定
