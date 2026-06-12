@@ -325,7 +325,7 @@ class Boss1 {
 
     this.scale = 0.5;
 
-    this.maxHp = 45;
+    this.maxHp = 2;
     this.hp = this.maxHp;
 
     this.speed = 2;
