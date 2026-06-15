@@ -103,6 +103,6 @@ window.DINOSAURS = [
 
 window.TRIAL_MARKER = {
   name: 'お試しマーカー',
-  marker: 'assets/markers/pattern-stanp.patt',
-  markerImage: 'assets/images/pattern-stanp.png'
+  marker: 'assets/markers/st.patt',
+  markerImage: 'assets/images/st.png'
 };
