@@ -319,53 +319,137 @@
       <a-asset-item id="model-tarbosaurus" src="assets/models/torikosaurusu.glb"></a-asset-item>
     </a-assets>
 
-    <a-marker id="marker-protoceratops" data-dino-id="protoceratops" type="pattern" url="assets/markers/st1.patt" emitevents="true">
-      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-      <a-entity position="0 0.02 0" rotation="0 180 0">
-        <a-entity gltf-model="#model-protoceratops" fit-gltf-on-marker animation="property: rotation; to: 0 360 0; loop: true; dur: 12000" animation-mixer></a-entity>
-      </a-entity>
-    </a-marker>
+      <a-marker
+        id="marker-protoceratops"
+        data-dino-id="protoceratops"
+        type="pattern"
+        url="assets/markers/st1.patt"
+        emitevents="true"
+        smooth="true"
+        smoothCount="8"
+        smoothTolerance="0.01"
+        smoothThreshold="3">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity
+            gltf-model="#model-protoceratops"
+            fit-gltf-on-marker
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"
+            animation-mixer>
+          </a-entity>
+        </a-entity>
+      </a-marker>
 
-    <a-marker id="marker-ravjaa" data-dino-id="ravjaa" type="pattern" url="assets/markers/st2.patt" emitevents="true">
-      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-      <a-entity position="0 0.02 0" rotation="0 180 0">
-        <a-entity gltf-model="#model-ravjaa" fit-gltf-on-marker animation="property: rotation; to: 0 360 0; loop: true; dur: 12000" animation-mixer></a-entity>
-      </a-entity>
-    </a-marker>
+      <a-marker
+        id="marker-ravjaa"
+        data-dino-id="ravjaa"
+        type="pattern"
+        url="assets/markers/st2.patt"
+        emitevents="true"
+        smooth="true"
+        smoothCount="8"
+        smoothTolerance="0.01"
+        smoothThreshold="3">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity
+            gltf-model="#model-ravjaa"
+            fit-gltf-on-marker
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"
+            animation-mixer>
+          </a-entity>
+        </a-entity>
+      </a-marker>
 
-    <a-marker id="marker-corythosaurus" data-dino-id="corythosaurus" type="pattern" url="assets/markers/st3.patt" emitevents="true">
-      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-      <a-entity position="0 0.02 0" rotation="0 180 0">
-        <a-entity gltf-model="#model-corythosaurus" fit-gltf-on-marker animation="property: rotation; to: 0 360 0; loop: true; dur: 12000" animation-mixer></a-entity>
-      </a-entity>
-    </a-marker>
+      <a-marker
+        id="marker-corythosaurus"
+        data-dino-id="corythosaurus"
+        type="pattern"
+        url="assets/markers/st3.patt"
+        emitevents="true"
+        smooth="true"
+        smoothCount="8"
+        smoothTolerance="0.01"
+        smoothThreshold="3">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity
+            gltf-model="#model-corythosaurus"
+            fit-gltf-on-marker
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"
+            animation-mixer>
+          </a-entity>
+        </a-entity>
+      </a-marker>
 
-    <a-marker id="marker-zavacephale" data-dino-id="zavacephale" type="pattern" url="assets/markers/st4.patt" emitevents="true">
-      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-      <a-entity position="0 0.02 0" rotation="0 180 0">
-        <a-entity gltf-model="#model-zavacephale" fit-gltf-on-marker animation="property: rotation; to: 0 360 0; loop: true; dur: 12000" animation-mixer></a-entity>
-      </a-entity>
-    </a-marker>
+      <a-marker
+        id="marker-zavacephale"
+        data-dino-id="zavacephale"
+        type="pattern"
+        url="assets/markers/st4.patt"
+        emitevents="true"
+        smooth="true"
+        smoothCount="8"
+        smoothTolerance="0.01"
+        smoothThreshold="3">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity
+            gltf-model="#model-zavacephale"
+            fit-gltf-on-marker
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"
+            animation-mixer>
+          </a-entity>
+        </a-entity>
+      </a-marker>
 
-    <a-marker id="marker-pinacosaurus" data-dino-id="pinacosaurus" type="pattern" url="assets/markers/st5.patt" emitevents="true">
-      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-      <a-entity position="0 0.02 0" rotation="0 180 0">
-        <a-entity gltf-model="#model-pinacosaurus" fit-gltf-on-marker animation="property: rotation; to: 0 360 0; loop: true; dur: 12000" animation-mixer></a-entity>
-      </a-entity>
-    </a-marker>
+      <a-marker
+        id="marker-pinacosaurus"
+        data-dino-id="pinacosaurus"
+        type="pattern"
+        url="assets/markers/st5.patt"
+        emitevents="true"
+        smooth="true"
+        smoothCount="8"
+        smoothTolerance="0.01"
+        smoothThreshold="3">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity
+            gltf-model="#model-pinacosaurus"
+            fit-gltf-on-marker
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"
+            animation-mixer>
+          </a-entity>
+        </a-entity>
+      </a-marker>
 
-    <a-marker id="marker-tarbosaurus" data-dino-id="tarbosaurus" type="pattern" url="assets/markers/st6.patt" emitevents="true">
-      <a-entity light="type: ambient; intensity: 1.8"></a-entity>
-      <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-      <a-entity position="0 0.02 0" rotation="0 180 0">
-        <a-entity gltf-model="#model-tarbosaurus" fit-gltf-on-marker animation="property: rotation; to: 0 360 0; loop: true; dur: 12000" animation-mixer></a-entity>
-      </a-entity>
-    </a-marker>
+      <a-marker
+        id="marker-tarbosaurus"
+        data-dino-id="tarbosaurus"
+        type="pattern"
+        url="assets/markers/st6.patt"
+        emitevents="true"
+        smooth="true"
+        smoothCount="8"
+        smoothTolerance="0.01"
+        smoothThreshold="3">
+        <a-entity light="type: ambient; intensity: 1.8"></a-entity>
+        <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
+        <a-entity position="0 0.02 0" rotation="0 180 0">
+          <a-entity
+            gltf-model="#model-tarbosaurus"
+            fit-gltf-on-marker
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 12000"
+            animation-mixer>
+          </a-entity>
+        </a-entity>
+      </a-marker>
 
     <a-entity camera></a-entity>
   </a-scene>
