@@ -83,29 +83,52 @@
       const videos = document.querySelectorAll('video, #arjs-video, .arjs-video');
       const canvases = document.querySelectorAll('a-scene canvas, canvas.a-canvas, .a-canvas');
       const viewport = window.visualViewport || window;
-      const vw = Math.ceil(viewport.width || window.innerWidth);
-      const vh = Math.ceil(viewport.height || window.innerHeight);
-      const videoW = Math.ceil(vw * 1.18);
+      const vw = viewport.width || window.innerWidth;
+      const vh = viewport.height || window.innerHeight;
 
+      // 1. AR.jsが設定しているカメラ映像の本来の比率（今回は 1280x720 = 16:9）
+      let videoAspect = 16 / 9; 
+      if (videos.length > 0 && videos[0].videoWidth && videos[0].videoHeight) {
+        videoAspect = videos[0].videoWidth / videos[0].videoHeight;
+      }
+      
+      // 2. 現在のスマートフォンの画面の比率
+      const screenAspect = vw / vh;
+
+      let videoW, videoH;
+
+      // 3. 画面の比率とカメラの比率を比較して、隙間ができない最小の拡大サイズを自動計算（object-fit: coverの再現）
+      if (screenAspect > videoAspect) {
+        // 横に広いデバイス（タブレットやスマホの横向き）
+        videoW = Math.ceil(vw);
+        videoH = Math.ceil(vw / videoAspect);
+      } else {
+        // 縦に長いデバイス（最新の超縦長スマホなど）
+        videoH = Math.ceil(vh);
+        videoW = Math.ceil(vh * videoAspect);
+      }
+
+      // CSS変数に正確な計算値をセット
       document.documentElement.style.setProperty('--real-vw', `${vw}px`);
       document.documentElement.style.setProperty('--real-vh', `${vh}px`);
       document.documentElement.style.setProperty('--camera-vw', `${videoW}px`);
+      document.documentElement.style.setProperty('--camera-vh', `${videoH}px`);
 
       videos.forEach((video) => {
         video.style.setProperty('position', 'fixed', 'important');
         video.style.setProperty('left', '50%', 'important');
-        video.style.setProperty('top', '0px', 'important');
+        video.style.setProperty('top', '50%', 'important'); // 👈 上下左右の中央に配置
         video.style.setProperty('right', 'auto', 'important');
         video.style.setProperty('bottom', 'auto', 'important');
         video.style.setProperty('width', `${videoW}px`, 'important');
-        video.style.setProperty('height', `${vh}px`, 'important');
+        video.style.setProperty('height', `${videoH}px`, 'important'); // 👈 画面のvhではなく、アスペクト比を維持した計算値にする
         video.style.setProperty('min-width', `${videoW}px`, 'important');
-        video.style.setProperty('min-height', `${vh}px`, 'important');
+        video.style.setProperty('min-height', `${videoH}px`, 'important');
         video.style.setProperty('max-width', 'none', 'important');
         video.style.setProperty('max-height', 'none', 'important');
         video.style.setProperty('object-fit', 'cover', 'important');
         video.style.setProperty('object-position', 'center center', 'important');
-        video.style.setProperty('transform', 'translateX(-50%)', 'important');
+        video.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); // 👈 上下左右の中央寄せ
         video.style.setProperty('z-index', '0', 'important');
       });
 
@@ -245,24 +268,25 @@
       z-index: 1 !important;
     }
 
+    /* ⭕ 変更後のCSS */
     body > video,
     video#arjs-video,
     video.arjs-video,
     .arjs-video {
       position: fixed !important;
       left: 50% !important;
-      top: 0 !important;
+      top: 50% !important; /* 👈 top: 0 から 50% に変更 */
       right: auto !important;
       bottom: auto !important;
-      width: var(--camera-vw, 118vw) !important;
-      height: var(--real-vh, 100dvh) !important;
-      min-width: var(--camera-vw, 118vw) !important;
-      min-height: var(--real-vh, 100dvh) !important;
+      width: var(--camera-vw, 100vw) !important;
+      height: var(--camera-vh, 100dvh) !important; /* 👈 新しい計算変数に対応 */
+      min-width: var(--camera-vw, 100vw) !important;
+      min-height: var(--camera-vh, 100dvh) !important; /* 👈 新しい計算変数に対応 */
       max-width: none !important;
       max-height: none !important;
       object-fit: cover !important;
       object-position: center center !important;
-      transform: translateX(-50%) !important;
+      transform: translate(-50%, -50%) !important; /* 👈 上下左右の中央寄せに修正 */
       transform-origin: center center !important;
       background: #000 !important;
       z-index: 0 !important;
@@ -308,7 +332,7 @@
     device-orientation-permission-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true; colorManagement: true"
     gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;"
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720;">
 
     <a-assets timeout="60000">
       <a-asset-item id="model-protoceratops" src="assets/models/protoceratops.glb"></a-asset-item>
