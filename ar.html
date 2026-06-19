@@ -85,7 +85,7 @@
       const viewport = window.visualViewport || window;
       const vw = Math.ceil(viewport.width || window.innerWidth);
       const vh = Math.ceil(viewport.height || window.innerHeight);
-      const videoW = Math.ceil(vw * 1.18);
+      const videoW = Math.ceil(vw * 1.0);
 
       document.documentElement.style.setProperty('--real-vw', `${vw}px`);
       document.documentElement.style.setProperty('--real-vh', `${vh}px`);
@@ -308,7 +308,7 @@
     device-orientation-permission-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true; colorManagement: true"
     gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;"
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;">
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720;">
 
     <a-assets timeout="60000">
       <a-asset-item id="model-protoceratops" src="assets/models/protoceratops.glb"></a-asset-item>
