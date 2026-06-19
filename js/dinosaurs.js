@@ -21,7 +21,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
     arFitTarget: 1.45,  // ⭕ AR画面での3Dモデルの大きさ
-    arYOffset: 0.05     // ⭕ AR画面での上下位置
+    arYOffset: 0     // ⭕ AR画面での上下位置
   },
   {
     id: 'ravjaa',
@@ -36,7 +36,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.06,
     collectionRotation: '0 0 0',
     arFitTarget: 1.25,  // ⭕ AR画面での3Dモデルの大きさ
-    arYOffset: 0.05     // ⭕ AR画面での上下位置
+    arYOffset: 0     // ⭕ AR画面での上下位置
   },
   {
     id: 'corythosaurus',
@@ -50,7 +50,7 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
-    arFitTarget: 30,  // ⭕ AR画面での3Dモデルの大きさ
+    arFitTarget: 2,  // ⭕ AR画面での3Dモデルの大きさ
     arYOffset: 0     // ⭕ AR画面での上下位置
   },
   {
@@ -67,7 +67,7 @@ window.DINOSAURS = [
     collectionCameraZ: 4.8,
     collectionRotation: '0 0 0',
     arFitTarget: 1.25,  // ⭕ AR画面での3Dモデルの大きさ
-    arYOffset: 0.05     // ⭕ AR画面での上下位置
+    arYOffset: 0     // ⭕ AR画面での上下位置
   },
   {
     id: 'pinacosaurus',
@@ -82,7 +82,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.06,
     collectionRotation: '0 0 0',
     arFitTarget: 1.25,  // ⭕ AR画面での3Dモデルの大きさ
-    arYOffset: 0.05     // ⭕ AR画面での上下位置
+    arYOffset: 0     // ⭕ AR画面での上下位置
   },
   {
     id: 'tarbosaurus',
@@ -97,7 +97,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
     arFitTarget: 1.25,  // ⭕ AR画面での3Dモデルの大きさ
-    arYOffset: 0.05     // ⭕ AR画面での上下位置
+    arYOffset: 0     // ⭕ AR画面での上下位置
   }
 ];
 
