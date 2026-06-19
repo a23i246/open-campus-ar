@@ -51,7 +51,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
     arFitTarget: 5,  // ⭕ AR画面での3Dモデルの大きさ
-    arYOffset: -0.5     // ⭕ AR画面での上下位置
+    arYOffset: -2     // ⭕ AR画面での上下位置
   },
   {
     id: 'zavacephale',
