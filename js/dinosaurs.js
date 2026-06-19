@@ -50,7 +50,7 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
-    arFitTarget: 4,  // ⭕ AR画面での3Dモデルの大きさ
+    arFitTarget: 1.25,  // ⭕ AR画面での3Dモデルの大きさ
     arYOffset: 0     // ⭕ AR画面での上下位置
   },
   {
