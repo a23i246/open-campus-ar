@@ -373,6 +373,20 @@
         smoothCount="8"
         smoothTolerance="0.01"
         smoothThreshold="3">
+
+         <a-sphere
+          position="0 0 0"
+          radius="0.03"
+          color="red">
+        </a-sphere>
+
+        <!-- Y方向確認用：マーカー面から少し上 -->
+        <a-sphere
+          position="0 0.1 0"
+          radius="0.03"
+          color="white">
+        </a-sphere>
+        
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
         <a-entity position="0 0 0" rotation="0 180 0">
