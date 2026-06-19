@@ -74,7 +74,7 @@ window.DINOSAURS = [
     name: 'ピナコサウルス',
     marker: 'assets/markers/st5.patt',
     markerImage: 'assets/images/st5.png',
-    model: 'assets/models/raujaa.glb',
+    model: 'assets/models/pinacosaurus.glb',
     url: '',
     description: 'ピナコサウルスがARマーカーから飛び出して、君のコレクションに加わりました。※現在のファイル内にpinacosaurus名のGLBがないため、近い候補としてraujaa.glbを割り当てています。',
     collectionFitTarget: 2.45,
