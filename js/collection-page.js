@@ -19,9 +19,14 @@ function toggleFullscreenModel(enable) {
   if (enable) {
     document.body.classList.add('model-fullscreen');
     if (sky) sky.setAttribute('visible', 'true');
+    if (camera) camera.setAttribute('look-controls', 'enabled', true);
   } else {
     document.body.classList.remove('model-fullscreen');
     if (sky) sky.setAttribute('visible', 'false');
+    if (camera) {
+      camera.setAttribute('look-controls', 'enabled', false);
+      camera.setAttribute('rotation', '0 0 0');
+    }
   }
 
   // A-Frameのキャンバスサイズをウィンドウサイズに合わせるためにリサイズを発火

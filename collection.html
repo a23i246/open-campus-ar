@@ -49,7 +49,9 @@
 
           <a-entity id="modal-model" position="0 -0.35 -3" scale="2 2 2" rotation="0 0 0" animation-mixer></a-entity>
 
-          <a-entity camera position="0 0 3.4"></a-entity>
+          <a-entity camera position="0 0 3.4" look-controls="enabled: false; touchEnabled: false; mouseEnabled: false">
+            <a-entity id="modal-model" position="0 -0.35 -6.4" scale="2 2 2" rotation="0 0 0" animation-mixer></a-entity>
+          </a-entity>
         </a-scene>
       </div>
 
