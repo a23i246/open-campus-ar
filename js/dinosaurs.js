@@ -59,7 +59,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
     arFitTarget: 20,  // ⭕ AR画面での3Dモデルの大きさ
-    arYOffset: 0,     // ⭕ AR画面での上下位置（足元補正後は大きいマイナス値を使わない）
+    arYOffset: -2,     // ⭕ AR画面での上下位置（足元補正後は大きいマイナス値を使わない）
     arControlBaseScale: 1.00,
     arControlBaseYOffset: 0.00
   },
@@ -76,7 +76,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.12,
     collectionCameraZ: 4.8,
     collectionRotation: '0 0 0',
-    arFitTarget: 10,  // ⭕ AR画面での3Dモデルの大きさ
+    arFitTarget: 7,  // ⭕ AR画面での3Dモデルの大きさ
     arYOffset: 0,    // ⭕ AR画面での上下位置
     arControlBaseScale: 0.20,      // ⭕ 写真で合わせた値。画面ではこれを「サイズ 0.00」として扱う
     arControlBaseYOffset: -0.07    // ⭕ 写真で合わせた値。画面ではこれを「上下 0.00」として扱う
@@ -112,7 +112,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
     // ⭕ タルボサウルス用のGLBは元データの見た目が大きいため、初期値を小さめにしています。
-    arFitTarget: 0.08,  // ⭕ AR画面での3Dモデルの大きさ
+    arFitTarget: -2,  // ⭕ AR画面での3Dモデルの大きさ
     arYOffset: 0,     // ⭕ AR画面での上下位置（足元補正後は大きいマイナス値を使わない）
     arControlBaseScale: 0.20,
     arControlBaseYOffset: -0.03
