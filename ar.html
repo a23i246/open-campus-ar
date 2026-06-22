@@ -309,9 +309,86 @@
 
     .a-enter-vr, .a-enter-ar {
       display: none !important;
-    }  </style>
+    }
+
+    /* ============================================================
+       デモ用パネル
+       URLの後ろに ?demo=1 を付けたときだけ表示されます。
+       通常の ar.html では display: none のままなので来場者には見えません。
+       例: ar.html?demo=1
+    ============================================================ */
+    .demo-panel {
+      display: none;
+      position: fixed;
+      top: calc(64px + env(safe-area-inset-top));
+      left: 12px;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.78);
+      color: #fff;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      width: 238px;
+      box-sizing: border-box;
+      border: 1px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(8px);
+    }
+
+    .demo-panel label {
+      display: block;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .demo-panel input[type="range"] {
+      width: 132px;
+      vertical-align: middle;
+    }
+
+    .demo-title {
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .demo-note {
+      margin-top: 8px;
+      color: #d1d5db;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+  </style>
 </head>
 <body>
+  <!-- ============================================================
+       デモ調整パネル
+       ?demo=1 のときだけ表示されます。
+       通常公開時は非表示なので、普段のAR画面には影響しません。
+  ============================================================ -->
+  <div id="demo-panel" class="demo-panel">
+    <div class="demo-title">デモ調整</div>
+
+    <label>
+      サイズ:
+      <input id="demo-scale" type="range" min="0.2" max="4" step="0.05" value="1">
+      <span id="demo-scale-value">1</span>
+    </label>
+
+    <label>
+      上下位置:
+      <input id="demo-y" type="range" min="-0.8" max="0.8" step="0.01" value="0">
+      <span id="demo-y-value">0</span>
+    </label>
+
+    <label>
+      <input id="demo-origin" type="checkbox" checked>
+      原点の赤い球を表示
+    </label>
+
+    <div class="demo-note">
+      この調整は確認用です。保存はされません。
+    </div>
+  </div>
+
   <div class="top-help">マーカーをかざしてください。対応する3Dモデルを表示します。</div>
 
   <div class="panel">
@@ -357,7 +434,16 @@
         smoothThreshold="3">
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity position="0 0 0" rotation="0 180 0">
+        <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
+          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <a-sphere
+            class="demo-origin-ball"
+            position="0 0 0"
+            radius="0.03"
+            color="red"
+            visible="false">
+          </a-sphere>
+
           <a-entity
             gltf-model="#model-protoceratops"
             fit-gltf-on-marker
@@ -379,7 +465,16 @@
         smoothThreshold="3">
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity position="0 0 0" rotation="0 180 0">
+        <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
+          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <a-sphere
+            class="demo-origin-ball"
+            position="0 0 0"
+            radius="0.03"
+            color="red"
+            visible="false">
+          </a-sphere>
+
           <a-entity
             gltf-model="#model-ravjaa"
             fit-gltf-on-marker
@@ -401,7 +496,16 @@
         smoothThreshold="3">
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity position="0 0 0" rotation="0 180 0">
+        <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
+          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <a-sphere
+            class="demo-origin-ball"
+            position="0 0 0"
+            radius="0.03"
+            color="red"
+            visible="false">
+          </a-sphere>
+
           <a-entity
             gltf-model="#model-corythosaurus"
             fit-gltf-on-marker
@@ -423,7 +527,16 @@
         smoothThreshold="3">
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity position="0 0 0" rotation="0 180 0">
+        <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
+          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <a-sphere
+            class="demo-origin-ball"
+            position="0 0 0"
+            radius="0.03"
+            color="red"
+            visible="false">
+          </a-sphere>
+
           <a-entity
             gltf-model="#model-zavacephale"
             fit-gltf-on-marker
@@ -445,7 +558,16 @@
         smoothThreshold="3">
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity position="0 0 0" rotation="0 180 0">
+        <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
+          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <a-sphere
+            class="demo-origin-ball"
+            position="0 0 0"
+            radius="0.03"
+            color="red"
+            visible="false">
+          </a-sphere>
+
           <a-entity
             gltf-model="#model-pinacosaurus"
             fit-gltf-on-marker
@@ -467,7 +589,16 @@
         smoothThreshold="3">
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
-        <a-entity position="0 0 0" rotation="0 180 0">
+        <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
+          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <a-sphere
+            class="demo-origin-ball"
+            position="0 0 0"
+            radius="0.03"
+            color="red"
+            visible="false">
+          </a-sphere>
+
           <a-entity
             gltf-model="#model-tarbosaurus"
             fit-gltf-on-marker
@@ -550,6 +681,67 @@
     window.addEventListener('error', (e) => {
       if (statusEl) statusEl.textContent = 'エラー: ' + (e.message || '不明なエラー');
     });
+
+    /* ============================================================
+       デモモード
+       URLの後ろに ?demo=1 が付いたときだけ動きます。
+
+       できること：
+       ・デモ用パネルを表示
+       ・全モデルの親要素 ar-model-root の scale を変更
+       ・全モデルの親要素 ar-model-root の Y位置を変更
+       ・原点確認用の赤い球 demo-origin-ball を表示/非表示
+
+       注意：
+       ここで変えた値は保存されません。
+       良い値が見つかったら dinosaurs.js の arFitTarget / arYOffset に反映してください。
+    ============================================================ */
+    function setupDemoMode() {
+      const params = new URLSearchParams(window.location.search);
+      const isDemo = params.get('demo') === '1';
+
+      // 通常URLでは何もしない
+      if (!isDemo) return;
+
+      const panel = document.getElementById('demo-panel');
+      if (panel) panel.style.display = 'block';
+
+      const scaleInput = document.getElementById('demo-scale');
+      const scaleValue = document.getElementById('demo-scale-value');
+      const yInput = document.getElementById('demo-y');
+      const yValue = document.getElementById('demo-y-value');
+      const originInput = document.getElementById('demo-origin');
+
+      const modelRoots = document.querySelectorAll('.ar-model-root');
+      const originBalls = document.querySelectorAll('.demo-origin-ball');
+
+      function applyDemoSettings() {
+        const scale = Number(scaleInput?.value || 1);
+        const y = Number(yInput?.value || 0);
+        const showOrigin = originInput?.checked ?? true;
+
+        if (scaleValue) scaleValue.textContent = scale.toFixed(2);
+        if (yValue) yValue.textContent = y.toFixed(2);
+
+        // モデル本体ではなく親要素を動かすので、fit-gltf-on-marker の自動調整と併用しやすい
+        modelRoots.forEach((root) => {
+          root.setAttribute('scale', `${scale} ${scale} ${scale}`);
+          root.setAttribute('position', `0 ${y} 0`);
+        });
+
+        originBalls.forEach((ball) => {
+          ball.setAttribute('visible', showOrigin);
+        });
+      }
+
+      scaleInput?.addEventListener('input', applyDemoSettings);
+      yInput?.addEventListener('input', applyDemoSettings);
+      originInput?.addEventListener('change', applyDemoSettings);
+
+      applyDemoSettings();
+    }
+
+    setupDemoMode();
 
     updateCount();
   </script>
