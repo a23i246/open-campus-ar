@@ -176,87 +176,132 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
+    /* 上部の説明吹き出しは本番UIを小さくするため非表示 */
     .top-help {
-      position: fixed;
-      top: calc(12px + env(safe-area-inset-top));
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      background: rgba(255,255,255,0.94);
-      color: #111827;
-      padding: 10px 16px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: 14px;
-      text-align: center;
-      width: calc(100% - 48px);
-      max-width: 560px;
-      box-sizing: border-box;
+      display: none;
     }
 
+    /* ============================================================
+       本番用の下部操作パネル
+       画面の約3分の1以内に収まるように、文字・余白・ボタンを小さめにしています。
+       表示内容：
+       ・認識中のマーカー名
+       ・コレクション追加ボタン
+       ・トップへ戻るボタン
+       ・サイズ調整
+       ・上下位置調整
+       ・原点の赤い球 ON/OFF
+    ============================================================ */
     .panel {
       position: fixed;
-      left: 16px;
-      right: 16px;
-      bottom: calc(16px + env(safe-area-inset-bottom));
+      left: 8px;
+      right: 8px;
+      bottom: calc(8px + env(safe-area-inset-bottom));
       z-index: 9999;
-      background: rgba(15, 23, 42, 0.92);
+      max-height: calc(33dvh - env(safe-area-inset-bottom));
+      overflow-y: auto;
+      background: rgba(15, 23, 42, 0.88);
       color: #fff;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      border-radius: 20px;
-      padding: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 14px;
+      padding: 8px;
       box-sizing: border-box;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(8px);
+      font-size: 12px;
     }
 
-    .title {
+    .marker-row {
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      font-weight: 800;
-      font-size: 18px;
-      margin-bottom: 8px;
+      gap: 8px;
+      margin-bottom: 6px;
+      line-height: 1.2;
     }
 
-    #status {
-      font-size: 15px;
-      line-height: 1.6;
-      color: #e5e7eb;
-      margin-bottom: 12px;
+    .marker-label {
+      color: #cbd5e1;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    #current-model-name {
+      font-size: 14px;
+      font-weight: 900;
+      color: #fff;
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      margin-bottom: 6px;
       align-items: center;
     }
 
-    .actions a, .actions button {
-      display: inline-block;
+    .actions a,
+    .actions button,
+    .origin-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
       background: #fff;
       color: #111827;
       text-decoration: none;
-      padding: 10px 16px;
+      padding: 6px 10px;
       border-radius: 999px;
-      font-weight: 800;
+      font-weight: 900;
       border: 0;
-      font-size: 14px;
-    }
-
-    .actions button {
-      background: #fff;
+      font-size: 12px;
+      box-sizing: border-box;
     }
 
     .actions button:disabled {
       opacity: 0.55;
     }
 
-    #collected-count {
-      margin-left: auto;
+    .adjust-controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px 8px;
+      align-items: center;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      gap: 6px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .control-row span {
       color: #e5e7eb;
-      font-size: 13px;
       font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .control-row input[type="range"] {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .origin-toggle {
+      grid-row: 1 / span 2;
+      grid-column: 2;
+      min-width: 72px;
+      background: #fecaca;
+      color: #7f1d1d;
+    }
+
+    .origin-toggle.is-off {
+      background: #e5e7eb;
+      color: #374151;
     }
 
     a-scene {
@@ -311,97 +356,39 @@
       display: none !important;
     }
 
-    /* ============================================================
-       デモ用パネル
-       URLの後ろに ?demo=1 を付けたときだけ表示されます。
-       通常の ar.html では display: none のままなので来場者には見えません。
-       例: ar.html?demo=1
-    ============================================================ */
-    .demo-panel {
-      display: none;
-      position: fixed;
-      top: calc(64px + env(safe-area-inset-top));
-      left: 12px;
-      z-index: 10000;
-      background: rgba(0, 0, 0, 0.78);
-      color: #fff;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 13px;
-      width: 238px;
-      box-sizing: border-box;
-      border: 1px solid rgba(255,255,255,0.25);
-      backdrop-filter: blur(8px);
-    }
-
-    .demo-panel label {
-      display: block;
-      margin-top: 8px;
-      line-height: 1.5;
-    }
-
-    .demo-panel input[type="range"] {
-      width: 132px;
-      vertical-align: middle;
-    }
-
-    .demo-title {
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-
-    .demo-note {
-      margin-top: 8px;
-      color: #d1d5db;
-      font-size: 12px;
-      line-height: 1.5;
-    }
   </style>
 </head>
 <body>
-  <!-- ============================================================
-       デモ調整パネル
-       ?demo=1 のときだけ表示されます。
-       通常公開時は非表示なので、普段のAR画面には影響しません。
-  ============================================================ -->
-  <div id="demo-panel" class="demo-panel">
-    <div class="demo-title">デモ調整</div>
-
-    <label>
-      サイズ:
-      <input id="demo-scale" type="range" min="0.2" max="4" step="0.05" value="1">
-      <span id="demo-scale-value">1</span>
-    </label>
-
-    <label>
-      上下位置:
-      <input id="demo-y" type="range" min="-0.8" max="0.8" step="0.01" value="0">
-      <span id="demo-y-value">0</span>
-    </label>
-
-    <label>
-      <input id="demo-origin" type="checkbox" checked>
-      原点の赤い球を表示
-    </label>
-
-    <div class="demo-note">
-      この調整は確認用です。保存はされません。
-    </div>
-  </div>
-
   <div class="top-help">マーカーをかざしてください。対応する3Dモデルを表示します。</div>
 
+  <!-- ============================================================
+       本番用の下部操作パネル
+       通常URLでも常に表示されます。
+       画面を広く使えるように、必要最低限の項目だけにしています。
+  ============================================================ -->
   <div class="panel">
-    <div class="title">
-      <span>ARカメラ</span>
+    <div class="marker-row">
+      <span class="marker-label">認識中</span>
       <span id="current-model-name">待機中</span>
     </div>
-    <div id="status">マーカーを探しています。マーカー全体が画面に入るようにしてください。</div>
+
     <div class="actions">
       <button id="add-collection" disabled>コレクションに追加</button>
-      <a href="collection.html">コレクション</a>
       <a href="index.html">トップへ</a>
-      <span id="collected-count">0 / 6</span>
+    </div>
+
+    <div class="adjust-controls">
+      <label class="control-row">
+        <span>サイズ <b id="demo-scale-value">1.00</b></span>
+        <input id="demo-scale" type="range" min="0.2" max="4" step="0.05" value="1">
+      </label>
+
+      <label class="control-row">
+        <span>上下 <b id="demo-y-value">0.00</b></span>
+        <input id="demo-y" type="range" min="-0.8" max="0.8" step="0.01" value="0">
+      </label>
+
+      <button id="origin-toggle" class="origin-toggle" type="button" aria-pressed="true">原点ON</button>
     </div>
   </div>
 
@@ -435,7 +422,7 @@
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
         <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
-          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <!-- 原点確認用の赤い球です。下部パネルの「原点ON/OFF」で表示を切り替えます。 -->
           <a-sphere
             class="demo-origin-ball"
             position="0 0 0"
@@ -466,7 +453,7 @@
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
         <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
-          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <!-- 原点確認用の赤い球です。下部パネルの「原点ON/OFF」で表示を切り替えます。 -->
           <a-sphere
             class="demo-origin-ball"
             position="0 0 0"
@@ -497,7 +484,7 @@
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
         <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
-          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <!-- 原点確認用の赤い球です。下部パネルの「原点ON/OFF」で表示を切り替えます。 -->
           <a-sphere
             class="demo-origin-ball"
             position="0 0 0"
@@ -528,7 +515,7 @@
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
         <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
-          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <!-- 原点確認用の赤い球です。下部パネルの「原点ON/OFF」で表示を切り替えます。 -->
           <a-sphere
             class="demo-origin-ball"
             position="0 0 0"
@@ -559,7 +546,7 @@
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
         <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
-          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <!-- 原点確認用の赤い球です。下部パネルの「原点ON/OFF」で表示を切り替えます。 -->
           <a-sphere
             class="demo-origin-ball"
             position="0 0 0"
@@ -590,7 +577,7 @@
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
         <a-entity class="ar-model-root" position="0 0 0" rotation="0 180 0">
-          <!-- ?demo=1 のときにだけ visible=true になる原点確認用の球です。 -->
+          <!-- 原点確認用の赤い球です。下部パネルの「原点ON/OFF」で表示を切り替えます。 -->
           <a-sphere
             class="demo-origin-ball"
             position="0 0 0"
@@ -642,7 +629,7 @@
       if (addButton) {
         addButton.disabled = false;
         const already = getCollection().includes(id);
-        addButton.textContent = already ? `${dino.name} は追加済み` : `${dino.name} を追加`;
+        addButton.textContent = already ? '追加済み' : 'コレクションに追加';
       }
       makeRendererTransparent();
     }
@@ -683,42 +670,33 @@
     });
 
     /* ============================================================
-       デモモード
-       URLの後ろに ?demo=1 が付いたときだけ動きます。
+       本番用の調整機能
+       URLに ?demo=1 を付けなくても常に使えます。
 
        できること：
-       ・デモ用パネルを表示
        ・全モデルの親要素 ar-model-root の scale を変更
        ・全モデルの親要素 ar-model-root の Y位置を変更
        ・原点確認用の赤い球 demo-origin-ball を表示/非表示
 
        注意：
-       ここで変えた値は保存されません。
+       ここで変えた値は画面確認用です。リロードすると初期値に戻ります。
        良い値が見つかったら dinosaurs.js の arFitTarget / arYOffset に反映してください。
     ============================================================ */
-    function setupDemoMode() {
-      const params = new URLSearchParams(window.location.search);
-      const isDemo = params.get('demo') === '1';
-
-      // 通常URLでは何もしない
-      if (!isDemo) return;
-
-      const panel = document.getElementById('demo-panel');
-      if (panel) panel.style.display = 'block';
-
+    function setupProductionAdjustPanel() {
       const scaleInput = document.getElementById('demo-scale');
       const scaleValue = document.getElementById('demo-scale-value');
       const yInput = document.getElementById('demo-y');
       const yValue = document.getElementById('demo-y-value');
-      const originInput = document.getElementById('demo-origin');
+      const originToggle = document.getElementById('origin-toggle');
 
       const modelRoots = document.querySelectorAll('.ar-model-root');
       const originBalls = document.querySelectorAll('.demo-origin-ball');
 
-      function applyDemoSettings() {
+      let showOrigin = true;
+
+      function applyAdjustSettings() {
         const scale = Number(scaleInput?.value || 1);
         const y = Number(yInput?.value || 0);
-        const showOrigin = originInput?.checked ?? true;
 
         if (scaleValue) scaleValue.textContent = scale.toFixed(2);
         if (yValue) yValue.textContent = y.toFixed(2);
@@ -732,16 +710,25 @@
         originBalls.forEach((ball) => {
           ball.setAttribute('visible', showOrigin);
         });
+
+        if (originToggle) {
+          originToggle.textContent = showOrigin ? '原点ON' : '原点OFF';
+          originToggle.classList.toggle('is-off', !showOrigin);
+          originToggle.setAttribute('aria-pressed', String(showOrigin));
+        }
       }
 
-      scaleInput?.addEventListener('input', applyDemoSettings);
-      yInput?.addEventListener('input', applyDemoSettings);
-      originInput?.addEventListener('change', applyDemoSettings);
+      scaleInput?.addEventListener('input', applyAdjustSettings);
+      yInput?.addEventListener('input', applyAdjustSettings);
+      originToggle?.addEventListener('click', () => {
+        showOrigin = !showOrigin;
+        applyAdjustSettings();
+      });
 
-      applyDemoSettings();
+      applyAdjustSettings();
     }
 
-    setupDemoMode();
+    setupProductionAdjustPanel();
 
     updateCount();
   </script>
