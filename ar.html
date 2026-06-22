@@ -41,6 +41,7 @@
 
           this.el.object3D.scale.set(1, 1, 1);
           this.el.object3D.position.set(0, 0, 0);
+          mesh.position.set(0, 0, 0);
           this.el.object3D.updateMatrixWorld(true);
 
           const box = new THREE.Box3().setFromObject(mesh);
@@ -53,10 +54,11 @@
           const scale = maxSize > 0 ? targetSize / maxSize : 1; // ⭕ 変更
 
           this.el.object3D.scale.set(scale, scale, scale);
-          this.el.object3D.position.set(
-            -center.x * scale,
-            -box.min.y * scale + yOffsetVal, // ⭕ 変更
-            -center.z * scale
+          this.el.object3D.position.set(0, 0, 0);
+          mesh.position.set(
+            -center.x,
+            -box.min.y + (yOffsetVal / scale),
+            -center.z
           );
           this.el.object3D.updateMatrixWorld(true);
         });
@@ -397,20 +399,6 @@
         smoothCount="8"
         smoothTolerance="0.01"
         smoothThreshold="3">
-
-         <a-sphere
-          position="0 0 0"
-          radius="0.03"
-          color="red">
-        </a-sphere>
-
-        <!-- Y方向確認用：マーカー面から少し上 -->
-        <a-sphere
-          position="0 0.1 0"
-          radius="0.03"
-          color="white">
-        </a-sphere>
-        
         <a-entity light="type: ambient; intensity: 1.8"></a-entity>
         <a-entity light="type: directional; intensity: 1.2" position="0 2 2"></a-entity>
         <a-entity position="0 0 0" rotation="0 180 0">
