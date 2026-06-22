@@ -379,13 +379,13 @@
 
     <div class="adjust-controls">
       <label class="control-row">
-        <span>サイズ <b id="demo-scale-value">1.00</b></span>
-        <input id="demo-scale" type="range" min="0.2" max="4" step="0.05" value="1">
+        <span>サイズ <b id="demo-scale-value">0.00</b></span>
+        <input id="demo-scale" type="range" min="-2" max="2" step="0.05" value="0">
       </label>
 
       <label class="control-row">
         <span>上下 <b id="demo-y-value">0.00</b></span>
-        <input id="demo-y" type="range" min="-0.8" max="0.8" step="0.01" value="0">
+        <input id="demo-y" type="range" min="-0.4" max="0.4" step="0.01" value="0">
       </label>
 
       <button id="origin-toggle" class="origin-toggle" type="button" aria-pressed="true">原点ON</button>
@@ -617,6 +617,7 @@
       if (!dino) {
         if (nameEl) nameEl.textContent = '待機中';
         if (statusEl) statusEl.textContent = 'マーカーを探しています。マーカー全体が画面に入るようにしてください。';
+        if (typeof window.refreshARAdjustPanel === 'function') window.refreshARAdjustPanel();
         if (addButton) {
           addButton.disabled = true;
           addButton.textContent = 'コレクションに追加';
@@ -624,6 +625,7 @@
         return;
       }
 
+      if (typeof window.refreshARAdjustPanel === 'function') window.refreshARAdjustPanel();
       if (nameEl) nameEl.textContent = dino.name;
       if (statusEl) statusEl.textContent = `${dino.name} を認識しました。3Dモデルが見えるか確認してください。`;
       if (addButton) {
@@ -692,22 +694,67 @@
       const modelRoots = document.querySelectorAll('.ar-model-root');
       const originBalls = document.querySelectorAll('.demo-origin-ball');
 
+      // 原点確認用の赤い球は「モデルの親要素」の中に入っていると、
+      // サイズ・上下調整と一緒に動いてしまい、本当のマーカー原点が分かりにくくなります。
+      // そのため、読み込み時に a-marker 直下へ移動して、常に marker の 0,0,0 を示すようにします。
+      originBalls.forEach((ball) => {
+        const root = ball.closest('.ar-model-root');
+        const marker = ball.closest('a-marker');
+        if (root && marker && ball.parentElement !== marker) {
+          marker.insertBefore(ball, root);
+        }
+      });
+
       let showOrigin = true;
 
+      // 恐竜ごとの調整差分です。
+      // 画面表示の「0.00」は dinosaurs.js の arControlBaseScale / arControlBaseYOffset を意味します。
+      const adjustByDino = {};
+
+      function getRootDinoId(root) {
+        const marker = root.closest('a-marker');
+        return marker ? marker.dataset.dinoId : null;
+      }
+
+      function getDino(id) {
+        return window.DINOSAURS?.find(d => d.id === id) || null;
+      }
+
+      function getAdjust(id) {
+        if (!id) return { scaleDelta: 0, yDelta: 0 };
+        if (!adjustByDino[id]) adjustByDino[id] = { scaleDelta: 0, yDelta: 0 };
+        return adjustByDino[id];
+      }
+
+      function getBaseScale(dino) {
+        return Number(dino?.arControlBaseScale ?? 1);
+      }
+
+      function getBaseY(dino) {
+        return Number(dino?.arControlBaseYOffset ?? 0);
+      }
+
       function applyAdjustSettings() {
-        const scale = Number(scaleInput?.value || 1);
-        const y = Number(yInput?.value || 0);
+        const activeId = currentId;
+        const activeAdjust = getAdjust(activeId);
 
-        if (scaleValue) scaleValue.textContent = scale.toFixed(2);
-        if (yValue) yValue.textContent = y.toFixed(2);
+        if (scaleValue) scaleValue.textContent = activeAdjust.scaleDelta.toFixed(2);
+        if (yValue) yValue.textContent = activeAdjust.yDelta.toFixed(2);
 
-        // モデル本体ではなく親要素を動かすので、fit-gltf-on-marker の自動調整と併用しやすい
+        // 各モデルに、それぞれの基準値 + そのモデル用の差分を適用します。
+        // サイズは「足し算」だと 0.20 など小さいモデルでマイナスになりやすいため、
+        // 2の累乗倍率にして、0.00=基準、+1.00=2倍、-1.00=半分にしています。
         modelRoots.forEach((root) => {
+          const id = getRootDinoId(root);
+          const dino = getDino(id);
+          const adjust = getAdjust(id);
+          const scale = Math.max(0.01, getBaseScale(dino) * Math.pow(2, adjust.scaleDelta));
+          const y = getBaseY(dino) + adjust.yDelta;
           root.setAttribute('scale', `${scale} ${scale} ${scale}`);
           root.setAttribute('position', `0 ${y} 0`);
         });
 
-        originBalls.forEach((ball) => {
+        document.querySelectorAll('.demo-origin-ball').forEach((ball) => {
           ball.setAttribute('visible', showOrigin);
         });
 
@@ -718,8 +765,26 @@
         }
       }
 
-      scaleInput?.addEventListener('input', applyAdjustSettings);
-      yInput?.addEventListener('input', applyAdjustSettings);
+      // 今認識している恐竜の調整値をスライダーへ反映します。
+      window.refreshARAdjustPanel = function refreshARAdjustPanel() {
+        const adjust = getAdjust(currentId);
+        if (scaleInput) scaleInput.value = String(adjust.scaleDelta);
+        if (yInput) yInput.value = String(adjust.yDelta);
+        applyAdjustSettings();
+      };
+
+      scaleInput?.addEventListener('input', () => {
+        const ids = currentId ? [currentId] : window.DINOSAURS.map(d => d.id);
+        ids.forEach((id) => { getAdjust(id).scaleDelta = Number(scaleInput.value || 0); });
+        applyAdjustSettings();
+      });
+
+      yInput?.addEventListener('input', () => {
+        const ids = currentId ? [currentId] : window.DINOSAURS.map(d => d.id);
+        ids.forEach((id) => { getAdjust(id).yDelta = Number(yInput.value || 0); });
+        applyAdjustSettings();
+      });
+
       originToggle?.addEventListener('click', () => {
         showOrigin = !showOrigin;
         applyAdjustSettings();
