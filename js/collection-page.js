@@ -15,6 +15,7 @@ let currentDetailDino = null;
 function toggleFullscreenModel(enable) {
   const scene = document.querySelector('#modal-model-wrap a-scene');
   const sky = document.getElementById('fullscreen-sky');
+  const camera = document.querySelector('#modal-model-wrap [camera]');
 
   if (enable) {
     document.body.classList.add('model-fullscreen');
@@ -222,9 +223,8 @@ function closeDetail() {
   if (modal) {
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
+    modal.style.display = 'none';
   }
-
-  modal.style.display = 'none';
 }
 
 function setupModelSwipeRotation() {
