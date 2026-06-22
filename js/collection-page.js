@@ -179,6 +179,7 @@ function openDetail(id) {
   if (modal) {
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
+    modal.style.display = 'block';
   }
 
   if (camera) {
@@ -210,8 +211,6 @@ function openDetail(id) {
 
 function closeDetail() {
   const modal = document.getElementById('detail-modal');
-  const model = document.getElementById('modal-model');
-  if (model) model.removeAttribute('gltf-model');
 
   currentDetailDino = null;
   modalModelZoom = 1;
@@ -224,6 +223,8 @@ function closeDetail() {
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
   }
+
+  modal.style.display = 'none';
 }
 
 function setupModelSwipeRotation() {
