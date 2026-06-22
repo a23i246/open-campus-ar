@@ -112,7 +112,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
     // ⭕ タルボサウルス用のGLBは元データの見た目が大きいため、初期値を小さめにしています。
-    arFitTarget: -2,  // ⭕ AR画面での3Dモデルの大きさ
+    arFitTarget: -0.01,  // ⭕ AR画面での3Dモデルの大きさ
     arYOffset: 0,     // ⭕ AR画面での上下位置（足元補正後は大きいマイナス値を使わない）
     arControlBaseScale: 0.20,
     arControlBaseYOffset: -0.03
