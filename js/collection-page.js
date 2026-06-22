@@ -14,11 +14,14 @@ let currentDetailDino = null;
 // =========================================================
 function toggleFullscreenModel(enable) {
   const scene = document.querySelector('#modal-model-wrap a-scene');
+  const sky = document.getElementById('fullscreen-sky');
 
   if (enable) {
     document.body.classList.add('model-fullscreen');
+    if (sky) sky.setAttribute('visible', 'true');
   } else {
     document.body.classList.remove('model-fullscreen');
+    if (sky) sky.setAttribute('visible', 'false');
   }
 
   // A-Frameのキャンバスサイズをウィンドウサイズに合わせるためにリサイズを発火
