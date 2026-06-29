@@ -22,8 +22,8 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
-    arScale: 5.80,   // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
-    arYOffset: -0.03 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.80,   // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   },
   {
     id: 'ravjaa',
@@ -37,8 +37,8 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.06,
     collectionRotation: '0 0 0',
-    arScale: 20.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
-    arYOffset: -3.00  // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arYOffset: 0.00  // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   },
   {
     id: 'corythosaurus',
@@ -52,8 +52,8 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
-    arScale: 5.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
-    arYOffset: -3.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   },
   {
     id: 'zavacephale',
@@ -68,8 +68,8 @@ window.DINOSAURS = [
     collectionYOffset: 0.12,
     collectionCameraZ: 4.8,
     collectionRotation: '0 0 0',
-    arScale: 0.60,   // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
-    arYOffset: -0.07 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.00,   // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   },
   {
     id: 'pinacosaurus',
@@ -83,8 +83,8 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.06,
     collectionRotation: '0 0 0',
-    arScale: 5.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
-    arYOffset: 0.02  // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arYOffset: 0.00  // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   },
   {
     id: 'tarbosaurus',
@@ -99,8 +99,8 @@ window.DINOSAURS = [
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
     // ⭕ タルボサウルス用のGLBは元データの見た目が大きいため、初期値を小さめにしています。
-    arScale: 5.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
-    arYOffset: -0.03 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   }
 ];
 
