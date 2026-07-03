@@ -6,7 +6,7 @@
 // collectionYOffset   : コレクション詳細画面で上下位置を少しだけ調整します。下に寄る場合は少し上げます。
 // collectionRotation  : コレクション詳細画面を開いた直後の向き。正面がずれる場合はYの数字を調整します。
 // collectionCameraZ   : コレクション詳細画面のカメラ位置。モデルの中に入り込む場合は大きくします。
-// arScale              : AR画面での初期サイズ。下部パネルの「サイズ 0.00」の基準値です。
+// arScale              : AR画面でのサイズ倍率。1.00で「マーカーと同じくらいの初期サイズ」です。
 // arYOffset            : AR画面での初期上下位置。下部パネルの「上下 0.00」の基準値です。
 
 window.DINOSAURS = [
@@ -22,7 +22,7 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
-    arScale: 1.80,   // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
     arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   },
   {
@@ -37,7 +37,7 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.06,
     collectionRotation: '0 0 0',
-    arScale: 1.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
     arYOffset: 0.00  // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   },
   {
@@ -52,7 +52,7 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
-    arScale: 1.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
     arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   },
   {
@@ -68,7 +68,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.12,
     collectionCameraZ: 4.8,
     collectionRotation: '0 0 0',
-    arScale: 1.00,   // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
     arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   },
   {
@@ -83,7 +83,7 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.06,
     collectionRotation: '0 0 0',
-    arScale: 1.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
     arYOffset: 0.00  // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   },
   {
@@ -99,7 +99,7 @@ window.DINOSAURS = [
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
     // ⭕ タルボサウルス用のGLBは元データの見た目が大きいため、初期値を小さめにしています。
-    arScale: 1.00,  // ⭕ AR画面での初期サイズ。画面ではこれを「サイズ 0.00」として扱う
+    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
     arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
   }
 ];

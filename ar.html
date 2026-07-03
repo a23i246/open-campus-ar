@@ -14,9 +14,14 @@
   <script>
     AFRAME.registerComponent('fit-gltf-on-marker', {
       schema: {
-        // GLBごとの元サイズ差をそろえるため、まず最大辺が1になるように正規化します。
-        // 最終的なARサイズは dinosaurs.js の arScale だけで調整します。
-        normalizeTarget: { type: 'number', default: 1 }
+        // AR.jsの pattern marker は、マーカー面の正方形をおおよそ 1 x 1 の座標として扱います。
+        // markerSize: 1 なら、モデルの足元の横幅/奥行きがマーカーの正方形内に入る大きさになります。
+        // 0.9にすると少し余白あり、1.2にするとマーカーより少し大きめです。
+        markerSize: { type: 'number', default: 1 },
+
+        // true の場合、足元の横幅・奥行きだけを見てマーカーに合わせます。
+        // 恐竜の高さまで含めると、背の高いモデルが小さくなりすぎるため通常は true 推奨です。
+        fitFootprint: { type: 'boolean', default: true }
       },
       init: function () {
         this.el.addEventListener('model-loaded', () => {
@@ -43,11 +48,21 @@
           box.getSize(size);
           box.getCenter(center);
 
-          const maxSize = Math.max(size.x, size.y, size.z);
-          const scale = maxSize > 0 ? this.data.normalizeTarget / maxSize : 1;
+          // 初期値を「マーカーと同じサイズ」にするため、モデルの足元面の最大辺を1に合わせます。
+          // X/Z = マーカー上の横・奥行き、Y = 高さです。
+          let baseSize = this.data.fitFootprint
+            ? Math.max(size.x, size.z)
+            : Math.max(size.x, size.y, size.z);
 
-          // ここでは「足元中心を原点に合わせる」だけにします。
-          // 大きさと上下位置は .ar-model-root 側で arScale / arYOffset を使って調整します。
+          // GLBの向きや原点が特殊でX/Zがほぼ0になる場合だけ、高さも含めて保険をかけます。
+          if (!baseSize || baseSize < 0.000001) {
+            baseSize = Math.max(size.x, size.y, size.z);
+          }
+
+          const scale = baseSize > 0 ? this.data.markerSize / baseSize : 1;
+
+          // 足元の中心をマーカー原点に合わせます。
+          // これで、初期表示時にモデルの足元がマーカー中央に来ます。
           this.el.object3D.scale.set(scale, scale, scale);
           this.el.object3D.position.set(0, 0, 0);
           mesh.position.set(
