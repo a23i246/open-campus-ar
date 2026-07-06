@@ -100,7 +100,7 @@ window.DINOSAURS = [
     collectionRotation: '0 0 0',
     // 💡 元データが巨大なタルボサウルスも、HTML側の自動フィット（fit-gltf-on-marker）が
     // 読み込み時に自動で10cm枠に縮小してくれるため、1.00のままで真ん中に綺麗に収まります！
-    arScale: 1.00,   // ⭕ 1.00に戻します
+    arScale: 0.50,   // ⭕ 0.50に変更
     arYOffset: 0.00
   }
 ];
