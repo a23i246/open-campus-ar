@@ -22,8 +22,8 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
-    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
-    arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.00,   // ⭕ 1.00に戻します。自動スクリプトが中央＆10cmに合わせます
+    arYOffset: 0.00
   },
   {
     id: 'ravjaa',
@@ -37,8 +37,8 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.06,
     collectionRotation: '0 0 0',
-    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
-    arYOffset: 0.00  // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.00,   // ⭕ 1.00に戻します
+    arYOffset: 0.00
   },
   {
     id: 'corythosaurus',
@@ -52,8 +52,8 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
-    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
-    arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.00,   // ⭕ 1.00に戻します
+    arYOffset: 0.00
   },
   {
     id: 'zavacephale',
@@ -68,8 +68,8 @@ window.DINOSAURS = [
     collectionYOffset: 0.12,
     collectionCameraZ: 4.8,
     collectionRotation: '0 0 0',
-    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
-    arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.00,   // ⭕ 1.00のままでOKです
+    arYOffset: 0.00
   },
   {
     id: 'pinacosaurus',
@@ -83,8 +83,8 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.06,
     collectionRotation: '0 0 0',
-    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
-    arYOffset: 0.00  // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    arScale: 1.00,   // ⭕ 1.00に戻します
+    arYOffset: 0.00
   },
   {
     id: 'tarbosaurus',
@@ -98,9 +98,10 @@ window.DINOSAURS = [
     collectionDistance: 3.1,
     collectionYOffset: 0.04,
     collectionRotation: '0 0 0',
-    // ⭕ タルボサウルス用のGLBは元データの見た目が大きいため、初期値を小さめにしています。
-    arScale: 1.00,   // ⭕ AR画面でのサイズ倍率。1.00でマーカーと同じくらい
-    arYOffset: 0.00 // ⭕ AR画面での初期上下位置。画面ではこれを「上下 0.00」として扱う
+    // 💡 元データが巨大なタルボサウルスも、HTML側の自動フィット（fit-gltf-on-marker）が
+    // 読み込み時に自動で10cm枠に縮小してくれるため、1.00のままで真ん中に綺麗に収まります！
+    arScale: 1.00,   // ⭕ 1.00に戻します
+    arYOffset: 0.00
   }
 ];
 
