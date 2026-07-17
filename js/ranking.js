@@ -63,8 +63,7 @@
     const query = [
       'select=player_name,score,created_at',
       'order=score.desc,created_at.asc',
-      'limit=' + MAX_RANKING,
-      '_=' + Date.now()
+      'limit=' + MAX_RANKING
     ].join('&');
 
     const data = await request(TABLE_NAME + '?' + query, { method: 'GET' });
