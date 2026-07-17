@@ -68,12 +68,14 @@
   }
 
   async function loadRanking() {
+    // 前回表示したランキングを先に消し、取得結果が0件なら必ず空表示に更新する。
+    renderRows([]);
     setStatus('ランキングを読み込んでいます...');
     try {
       const query = '?select=player_name,score,created_at&order=score.desc,created_at.asc&limit=' + MAX_RANKING;
       const data = await supabaseRequest('/rest/v1/shooting_scores' + query, { method: 'GET' });
       renderRows(Array.isArray(data) ? data : []);
-      setStatus('最新のランキングを表示しています。');
+      setStatus(data.length ? '最新のランキングを表示しています。' : '現在、ランキング記録はありません。');
     } catch (error) {
       console.error(error);
       renderRows([]);

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-campus-ar-waiting-game-v8';
+const CACHE_NAME = 'open-campus-ar-waiting-game-v9';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -38,6 +38,14 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
+
+  // SupabaseのAPIレスポンスは絶対にキャッシュしない。
+  // ランキング削除後に古い記録が残って見える問題を防ぐ。
+  if (url.hostname.endsWith('.supabase.co')) {
+    event.respondWith(fetch(request, { cache: 'no-store' }));
+    return;
+  }
+
   const isHtml = request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/');
 
   if (isHtml || url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
