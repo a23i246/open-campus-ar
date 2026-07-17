@@ -1,10 +1,11 @@
-const CACHE_NAME = 'open-campus-ar-waiting-game-v7';
+const CACHE_NAME = 'open-campus-ar-waiting-game-v8';
 const CORE_ASSETS = [
   './',
   './index.html',
   './ar.html',
   './collection.html',
   './game.html',
+  './ranking.html',
   './css/common.css',
   './css/ar.css',
   './css/game.css',
@@ -15,7 +16,9 @@ const CORE_ASSETS = [
   './js/collection-page.js',
   './js/game-assets/p5.js',
   './js/game-assets/class.js',
-  './js/game-assets/sketch.js'
+  './js/game-assets/sketch.js',
+  './js/ranking.js',
+  './js/ranking-page.js'
 ];
 
 self.addEventListener('install', (event) => {
