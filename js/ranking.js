@@ -1,49 +1,66 @@
-// 端末内ランキング（localStorage）
-// Supabaseなどへ移行する場合は、このファイルの保存・取得処理を置き換える。
+// Supabase共有ランキング
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'dinosaurShootingRankingV1';
+  const SUPABASE_URL = 'https://qqwdgsanojynhimodgyz.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_CelLctJ06zPQOJp3nzIzgA_lS5n8ZSy';
   const MAX_RANKING = 10;
+
+  let supabaseClient = null;
   let pendingScore = 0;
   let pendingResult = 'gameover';
   let submittedThisResult = false;
 
-  function loadRanking() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      return Array.isArray(saved) ? saved : [];
-    } catch (error) {
-      console.error('ランキングの読み込みに失敗しました', error);
-      return [];
+  function getClient() {
+    if (supabaseClient) return supabaseClient;
+    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+      throw new Error('Supabaseライブラリを読み込めませんでした');
     }
+    supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+    return supabaseClient;
   }
 
-  function saveRanking(ranking) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(ranking));
-  }
-
-  function escapeName(name) {
+  function normalizeName(name) {
     return String(name || '').trim().replace(/\s+/g, ' ').slice(0, 10);
   }
 
-  function addScore(playerName, score, resultType) {
-    const ranking = loadRanking();
-    ranking.push({
-      name: escapeName(playerName),
-      score: Math.max(0, Math.floor(Number(score) || 0)),
-      result: resultType === 'clear' ? 'clear' : 'gameover',
-      createdAt: new Date().toISOString()
-    });
+  function normalizeScore(score) {
+    return Math.max(0, Math.floor(Number(score) || 0));
+  }
 
-    ranking.sort(function (a, b) {
-      if (b.score !== a.score) return b.score - a.score;
-      return new Date(a.createdAt) - new Date(b.createdAt);
-    });
+  function setStatus(message, isError) {
+    const status = document.getElementById('ranking-status');
+    if (!status) return;
+    status.textContent = message || '';
+    status.classList.toggle('is-error', Boolean(isError));
+  }
 
-    const top = ranking.slice(0, MAX_RANKING);
-    saveRanking(top);
-    return top;
+  async function loadRanking() {
+    const client = getClient();
+    const response = await client
+      .from('shooting_scores')
+      .select('player_name, score, created_at')
+      .order('score', { ascending: false })
+      .order('created_at', { ascending: true })
+      .limit(MAX_RANKING);
+
+    if (response.error) throw response.error;
+    return response.data || [];
+  }
+
+  async function addScore(playerName, score) {
+    const client = getClient();
+    const response = await client
+      .from('shooting_scores')
+      .insert({
+        player_name: normalizeName(playerName),
+        score: normalizeScore(score)
+      });
+
+    if (response.error) throw response.error;
   }
 
   function renderRanking(ranking) {
@@ -60,14 +77,36 @@
 
     ranking.forEach(function (record, index) {
       const item = document.createElement('li');
-      const resultLabel = record.result === 'clear' ? 'CLEAR' : 'OVER';
-      item.textContent = (index + 1) + '位  ' + record.name + '  ' + record.score + '点  [' + resultLabel + ']';
+      item.textContent =
+        (index + 1) + '位  ' +
+        normalizeName(record.player_name) + '  ' +
+        normalizeScore(record.score) + '点';
       list.appendChild(item);
     });
   }
 
+  async function refreshRanking() {
+    const list = document.getElementById('ranking-list');
+    if (list) {
+      list.textContent = '';
+      const loading = document.createElement('li');
+      loading.textContent = 'ランキングを読み込み中...';
+      list.appendChild(loading);
+    }
+
+    try {
+      const ranking = await loadRanking();
+      renderRanking(ranking);
+      setStatus('');
+    } catch (error) {
+      console.error('ランキングの取得に失敗しました', error);
+      renderRanking([]);
+      setStatus('ランキングの読み込みに失敗しました。通信状態とSupabaseの設定を確認してください。', true);
+    }
+  }
+
   window.showRankingScreen = function (finalScore, resultType) {
-    pendingScore = Math.max(0, Math.floor(Number(finalScore) || 0));
+    pendingScore = normalizeScore(finalScore);
     pendingResult = resultType === 'clear' ? 'clear' : 'gameover';
     submittedThisResult = false;
 
@@ -88,8 +127,9 @@
       submit.textContent = 'ランキングに登録';
     }
 
-    renderRanking(loadRanking());
+    setStatus('');
     if (modal) modal.hidden = false;
+    refreshRanking();
   };
 
   window.hideRankingScreen = function () {
@@ -112,26 +152,37 @@
     }
 
     if (submit) {
-      submit.addEventListener('click', function (event) {
+      submit.addEventListener('click', async function (event) {
         event.preventDefault();
         event.stopPropagation();
         if (submittedThisResult) return;
 
-        const name = escapeName(input ? input.value : '');
+        const name = normalizeName(input ? input.value : '');
         if (!name) {
           alert('名前を入力してください');
           if (input) input.focus();
           return;
         }
 
-        submittedThisResult = true;
-        localStorage.setItem('dinosaurShootingPlayerName', name);
-        const ranking = addScore(name, pendingScore, pendingResult);
-        renderRanking(ranking);
-
-        if (input) input.disabled = true;
         submit.disabled = true;
-        submit.textContent = '登録しました';
+        submit.textContent = '登録中...';
+        setStatus('スコアを登録しています...');
+
+        try {
+          await addScore(name, pendingScore);
+          submittedThisResult = true;
+          localStorage.setItem('dinosaurShootingPlayerName', name);
+
+          if (input) input.disabled = true;
+          submit.textContent = '登録しました';
+          setStatus('共有ランキングに登録しました。');
+          await refreshRanking();
+        } catch (error) {
+          console.error('ランキング登録に失敗しました', error);
+          submit.disabled = false;
+          submit.textContent = 'ランキングに登録';
+          setStatus('登録に失敗しました。INSERTポリシーと通信状態を確認してください。', true);
+        }
       });
     }
 
