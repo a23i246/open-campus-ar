@@ -1,27 +1,16 @@
-// Supabase共有ランキング
+// Supabase共有ランキング（REST API版）
 (function () {
   'use strict';
 
   const SUPABASE_URL = 'https://qqwdgsanojynhimodgyz.supabase.co';
-  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_CelLctJ06zPQOJp3nzIzgA_lS5n8ZSy';
+  // ブラウザ公開用のanonキー。service_role / secret keyは使用しない。
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxd2Rnc2Fub2p5bmhpbW9kZ3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyMzYwOTUsImV4cCI6MjA5OTgxMjA5NX0.Rip29YLG3Ck-LEMtPVxBsuE8p1vnarmMdU_FoYDbOfU';
+  const TABLE_NAME = 'shooting_scores';
   const MAX_RANKING = 10;
 
-  let supabaseClient = null;
   let pendingScore = 0;
   let pendingResult = 'gameover';
   let submittedThisResult = false;
-
-  function getClient() {
-    if (supabaseClient) return supabaseClient;
-    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
-      throw new Error('Supabaseライブラリを読み込めませんでした');
-    }
-    supabaseClient = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY
-    );
-    return supabaseClient;
-  }
 
   function normalizeName(name) {
     return String(name || '').trim().replace(/\s+/g, ' ').slice(0, 10);
@@ -38,29 +27,59 @@
     status.classList.toggle('is-error', Boolean(isError));
   }
 
-  async function loadRanking() {
-    const client = getClient();
-    const response = await client
-      .from('shooting_scores')
-      .select('player_name, score, created_at')
-      .order('score', { ascending: false })
-      .order('created_at', { ascending: true })
-      .limit(MAX_RANKING);
+  async function request(path, options) {
+    const response = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+      ...options,
+      cache: 'no-store',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        ...(options && options.headers ? options.headers : {})
+      }
+    });
 
-    if (response.error) throw response.error;
-    return response.data || [];
+    const text = await response.text();
+    let body = null;
+    if (text) {
+      try {
+        body = JSON.parse(text);
+      } catch (_) {
+        body = text;
+      }
+    }
+
+    if (!response.ok) {
+      const detail = body && typeof body === 'object'
+        ? (body.message || body.details || body.hint || JSON.stringify(body))
+        : (body || response.statusText);
+      throw new Error('HTTP ' + response.status + ': ' + detail);
+    }
+
+    return body;
+  }
+
+  async function loadRanking() {
+    const query = [
+      'select=player_name,score,created_at',
+      'order=score.desc,created_at.asc',
+      'limit=' + MAX_RANKING,
+      '_=' + Date.now()
+    ].join('&');
+
+    const data = await request(TABLE_NAME + '?' + query, { method: 'GET' });
+    return Array.isArray(data) ? data : [];
   }
 
   async function addScore(playerName, score) {
-    const client = getClient();
-    const response = await client
-      .from('shooting_scores')
-      .insert({
+    await request(TABLE_NAME, {
+      method: 'POST',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({
         player_name: normalizeName(playerName),
         score: normalizeScore(score)
-      });
-
-    if (response.error) throw response.error;
+      })
+    });
   }
 
   function renderRanking(ranking) {
@@ -85,7 +104,7 @@
     });
   }
 
-  async function refreshRanking() {
+  async function refreshRanking(showSuccessMessage) {
     const list = document.getElementById('ranking-list');
     if (list) {
       list.textContent = '';
@@ -97,11 +116,15 @@
     try {
       const ranking = await loadRanking();
       renderRanking(ranking);
-      setStatus('');
+      if (showSuccessMessage) {
+        setStatus('共有ランキングに登録しました。');
+      } else {
+        setStatus('');
+      }
     } catch (error) {
       console.error('ランキングの取得に失敗しました', error);
       renderRanking([]);
-      setStatus('ランキングの読み込みに失敗しました。通信状態とSupabaseの設定を確認してください。', true);
+      setStatus('ランキング取得エラー：' + error.message, true);
     }
   }
 
@@ -129,7 +152,7 @@
 
     setStatus('');
     if (modal) modal.hidden = false;
-    refreshRanking();
+    refreshRanking(false);
   };
 
   window.hideRankingScreen = function () {
@@ -159,7 +182,7 @@
 
         const name = normalizeName(input ? input.value : '');
         if (!name) {
-          alert('名前を入力してください');
+          setStatus('名前を入力してください。', true);
           if (input) input.focus();
           return;
         }
@@ -175,13 +198,12 @@
 
           if (input) input.disabled = true;
           submit.textContent = '登録しました';
-          setStatus('共有ランキングに登録しました。');
-          await refreshRanking();
+          await refreshRanking(true);
         } catch (error) {
           console.error('ランキング登録に失敗しました', error);
           submit.disabled = false;
           submit.textContent = 'ランキングに登録';
-          setStatus('登録に失敗しました。INSERTポリシーと通信状態を確認してください。', true);
+          setStatus('登録エラー：' + error.message, true);
         }
       });
     }
