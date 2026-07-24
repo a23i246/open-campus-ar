@@ -7,6 +7,7 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxd2Rnc2Fub2p5bmhpbW9kZ3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyMzYwOTUsImV4cCI6MjA5OTgxMjA5NX0.Rip29YLG3Ck-LEMtPVxBsuE8p1vnarmMdU_FoYDbOfU';
   const TABLE_NAME = 'shooting_scores';
   const MAX_RANKING = 10;
+  const REWARD_SCORE = 10000;
 
   let pendingScore = 0;
   let pendingResult = 'gameover';
@@ -137,6 +138,7 @@
     const score = document.getElementById('ranking-final-score');
     const input = document.getElementById('ranking-player-name');
     const submit = document.getElementById('ranking-submit-button');
+    const reward = document.getElementById('ranking-reward');
 
     if (title) title.textContent = pendingResult === 'clear' ? 'GAME CLEAR！' : 'GAME OVER';
     if (score) score.textContent = pendingScore;
@@ -147,6 +149,9 @@
     if (submit) {
       submit.disabled = false;
       submit.textContent = 'ランキングに登録';
+    }
+    if (reward) {
+      reward.hidden = pendingScore < REWARD_SCORE;
     }
 
     setStatus('');
@@ -164,6 +169,7 @@
     const input = document.getElementById('ranking-player-name');
     const submit = document.getElementById('ranking-submit-button');
     const retry = document.getElementById('ranking-retry-button');
+    const rewardDownload = document.getElementById('reward-download-button');
 
     if (modal) {
       ['touchstart', 'touchmove', 'touchend', 'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click'].forEach(function (type) {
@@ -204,6 +210,12 @@
           submit.textContent = 'ランキングに登録';
           setStatus('登録エラー：' + error.message, true);
         }
+      });
+    }
+
+    if (rewardDownload) {
+      rewardDownload.addEventListener('click', function (event) {
+        event.stopPropagation();
       });
     }
 
