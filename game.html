@@ -11,8 +11,8 @@
   <script defer src="js/preload.js"></script>
   <script defer src="js/game-assets/p5.js"></script>
   <script defer src="js/game-assets/class.js"></script>
-  <script defer src="js/ranking.js?v=3"></script>
-  <script defer src="js/game-assets/sketch.js?v=3"></script>
+  <script defer src="js/ranking.js?v=4"></script>
+  <script defer src="js/game-assets/sketch.js?v=4"></script>
 
   <style>
     #ranking-modal[hidden] { display: none; }
@@ -40,6 +40,19 @@
     #ranking-list { text-align: left; padding-left: 2.2em; line-height: 1.75; }
     #ranking-status { min-height: 1.5em; margin: 8px 0 0; font-size: 0.88rem; color: #a7f3d0; }
     #ranking-status.is-error { color: #fca5a5; }
+
+    #ranking-reward[hidden] { display: none; }
+    #ranking-reward {
+      margin: 14px 0; padding: 14px; border: 2px solid #facc15; border-radius: 12px;
+      background: linear-gradient(180deg, rgba(250, 204, 21, 0.18), rgba(245, 158, 11, 0.08));
+    }
+    #ranking-reward h3 { margin: 0 0 6px; color: #fde047; font-size: 1.25rem; }
+    #ranking-reward p { margin: 0 0 10px; line-height: 1.55; }
+    #reward-download-button {
+      display: block; box-sizing: border-box; width: 100%; padding: 13px; border-radius: 8px;
+      background: #facc15; color: #422006; font-weight: 800; text-decoration: none;
+      box-shadow: 0 0 18px rgba(250, 204, 21, 0.28);
+    }
   </style>
 </head>
 <body class="game-page-body">
@@ -70,6 +83,12 @@
       <p class="ranking-score">今回のスコア：<strong id="ranking-final-score">0</strong>点</p>
       <input id="ranking-player-name" type="text" maxlength="10" placeholder="名前を入力（10文字まで）" autocomplete="nickname">
       <button id="ranking-submit-button" type="button">ランキングに登録</button>
+
+      <section id="ranking-reward" hidden aria-live="polite">
+        <h3>クエスト達成！</h3>
+        <p>10,000点突破おめでとう！<br>ARマーカー6種類の報酬PDFを獲得しました。</p>
+        <a id="reward-download-button" href="assets/rewards/ar-markers-reward.pdf" download="恐竜ARマーカー6種_報酬.pdf">報酬PDFをダウンロード</a>
+      </section>
       <h3>共有ランキング TOP10</h3>
       <ol id="ranking-list"></ol>
       <p id="ranking-status" role="status" aria-live="polite"></p>
