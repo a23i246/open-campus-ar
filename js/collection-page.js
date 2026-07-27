@@ -8,6 +8,33 @@ let modalModelRotationY = 0;
 let modalModelZoom = 1;
 let modalModelBaseTarget = 2.2;
 let currentDetailDino = null;
+let arLauncherReady = false;
+let arLaunchInProgress = false;
+let arLoadTimeoutId = 0;
+
+function isIOSDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function updateARLaunchButton() {
+  const button = document.querySelector('[data-launch-ar]');
+  if (!button) return;
+
+  const launcher = document.getElementById('ar-model-launcher');
+  const supported = launcher?.canActivateAR !== false;
+  button.disabled = !currentDetailDino || !arLauncherReady || arLaunchInProgress || !supported;
+
+  if (arLaunchInProgress) {
+    button.textContent = 'ARを起動中…';
+  } else if (!currentDetailDino || !arLauncherReady) {
+    button.textContent = 'ARを準備中…';
+  } else if (!supported) {
+    button.textContent = 'この端末はAR非対応';
+  } else {
+    button.textContent = 'ARでまわりを見る';
+  }
+}
 
 // ios-src を省略すると、model-viewer が GLB から Quick Look 用の USDZ を起動時に生成する。
 // iPhone は Quick Look、Android は WebXR / Scene Viewer を同じ起動口から利用する。
@@ -15,8 +42,24 @@ function configureARModelLauncher(dino) {
   const launcher = document.getElementById('ar-model-launcher');
   if (!launcher || !dino) return;
 
+  window.clearTimeout(arLoadTimeoutId);
+  arLauncherReady = false;
+  arLaunchInProgress = false;
+  updateARLaunchButton();
+  setARLaunchStatus('AR用モデルを準備しています…');
+
+  // Android は端末標準の Scene Viewer を優先すると、WebXR の対応差を受けにくい。
+  // iPhone / iPad は Quick Look だけを指定し、GLB から USDZ を生成して起動する。
+  launcher.setAttribute('ar-modes', isIOSDevice() ? 'quick-look' : 'scene-viewer webxr');
   launcher.setAttribute('src', dino.model);
   launcher.setAttribute('alt', `${dino.name}をARで見る`);
+
+  // 低速回線や古い端末で永遠に「準備中」にならないよう案内を出す。
+  arLoadTimeoutId = window.setTimeout(() => {
+    if (!arLauncherReady) {
+      setARLaunchStatus('モデルの準備に時間がかかっています。通信状態を確認して少しお待ちください。');
+    }
+  }, 15000);
 }
 
 function setARLaunchStatus(message) {
@@ -26,7 +69,18 @@ function setARLaunchStatus(message) {
 
 function launchCurrentModelInAR() {
   const launcher = document.getElementById('ar-model-launcher');
-  if (!currentDetailDino || !launcher) return;
+  if (!currentDetailDino || !launcher || arLaunchInProgress) return;
+
+  if (!arLauncherReady) {
+    setARLaunchStatus('AR用モデルを準備中です。ボタンが緑色になるまでお待ちください。');
+    return;
+  }
+
+  if (launcher.canActivateAR === false) {
+    setARLaunchStatus('この端末ではARを利用できません。iPhoneはSafari、AndroidはChromeで開いてください。');
+    updateARLaunchButton();
+    return;
+  }
 
   // モバイルブラウザではユーザー操作の同期処理中に起動する必要があるため、ここでは await しない。
   if (typeof launcher.activateAR !== 'function') {
@@ -35,17 +89,28 @@ function launchCurrentModelInAR() {
   }
 
   setARLaunchStatus('ARを起動しています…');
+  arLaunchInProgress = true;
+  updateARLaunchButton();
+
+  const restoreButton = () => {
+    arLaunchInProgress = false;
+    updateARLaunchButton();
+  };
+
   try {
     const result = launcher.activateAR();
     if (result && typeof result.catch === 'function') {
       result.catch((error) => {
         console.warn('AR launch failed:', error);
         setARLaunchStatus('この端末またはブラウザではARを起動できません。iPhone は Safari、Android は Chrome でお試しください。');
-      });
+      }).finally(restoreButton);
+    } else {
+      window.setTimeout(restoreButton, 1500);
     }
   } catch (error) {
     console.warn('AR launch failed:', error);
     setARLaunchStatus('ARを起動できませんでした。iPhone は Safari、Android は Chrome でお試しください。');
+    restoreButton();
   }
 }
 
@@ -267,8 +332,12 @@ function closeDetail() {
   const modal = document.getElementById('detail-modal');
 
   currentDetailDino = null;
+  arLauncherReady = false;
+  arLaunchInProgress = false;
+  window.clearTimeout(arLoadTimeoutId);
   modalModelZoom = 1;
   updateZoomLabel();
+  updateARLaunchButton();
   setARLaunchStatus('');
   
   // モーダルを閉じる際に全画面も解除する
@@ -337,6 +406,39 @@ function setupModelSwipeRotation() {
 window.addEventListener('DOMContentLoaded', () => {
   renderCollection();
   setupModelSwipeRotation();
+
+  const launcher = document.getElementById('ar-model-launcher');
+  if (launcher) {
+    launcher.addEventListener('load', () => {
+      window.clearTimeout(arLoadTimeoutId);
+      arLauncherReady = true;
+      arLaunchInProgress = false;
+      setARLaunchStatus('準備完了です。ボタンを押すとARを起動します。');
+      updateARLaunchButton();
+    });
+
+    launcher.addEventListener('error', (event) => {
+      console.warn('AR model load failed:', event);
+      window.clearTimeout(arLoadTimeoutId);
+      arLauncherReady = false;
+      arLaunchInProgress = false;
+      setARLaunchStatus('AR用モデルを読み込めませんでした。通信状態を確認して開き直してください。');
+      updateARLaunchButton();
+    });
+
+    launcher.addEventListener('ar-status', (event) => {
+      const status = event.detail?.status;
+      if (status === 'failed') {
+        arLaunchInProgress = false;
+        setARLaunchStatus('ARを起動できませんでした。ブラウザとカメラ権限を確認してください。');
+        updateARLaunchButton();
+      } else if (status === 'not-presenting') {
+        arLaunchInProgress = false;
+        updateARLaunchButton();
+      }
+    });
+  }
+  updateARLaunchButton();
 
   document.addEventListener('click', (event) => {
     // 全画面解除ボタンが押されたとき

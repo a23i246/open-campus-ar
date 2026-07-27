@@ -59,10 +59,12 @@
           id="ar-model-launcher"
           class="ar-model-launcher"
           ar
-          ar-modes="webxr scene-viewer quick-look"
+          ar-modes="scene-viewer webxr quick-look"
           ar-placement="floor"
-          ar-scale="auto"
+          ar-scale="fixed"
           xr-environment
+          loading="eager"
+          reveal="auto"
           shadow-intensity="1">
         </model-viewer>
       </div>
@@ -85,7 +87,7 @@
   </div>
 
   <div class="ar-launch-controls">
-    <button class="button ar-launch-button" type="button" data-launch-ar>ARでまわりを見る</button>
+    <button class="button ar-launch-button" type="button" data-launch-ar disabled>ARを準備中…</button>
     <p class="ar-launch-status" id="ar-launch-status" role="status" aria-live="polite"></p>
   </div>
 </body>
