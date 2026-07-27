@@ -103,6 +103,24 @@
   </div>
 
   <script>
+    // ゲーム画面の大きさが変わらないよう、このページ内ではブラウザのズーム操作を止めます。
+    document.addEventListener('wheel', function (event) {
+      if (event.ctrlKey || event.metaKey) event.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('keydown', function (event) {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      if (['+', '-', '=', '0'].includes(event.key)) event.preventDefault();
+    });
+
+    document.addEventListener('touchmove', function (event) {
+      if (event.touches.length > 1) event.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('gesturestart', function (event) {
+      event.preventDefault();
+    }, { passive: false });
+
     // p5.js はスマホの touch 系イベントを強く拾うため、
     // 上部ナビだけは capture 段階で先に処理して確実に遷移させる。
     document.addEventListener('DOMContentLoaded', function () {
