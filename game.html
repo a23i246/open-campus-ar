@@ -37,6 +37,11 @@
     }
     #ranking-submit-button { background: #22d3ee; color: #082f49; }
     #ranking-retry-button { background: #e5e7eb; color: #111827; }
+    #ranking-home-button {
+      display: block; box-sizing: border-box; width: 100%; margin-top: 8px; padding: 12px;
+      border-radius: 8px; background: #475569; color: #fff; font-weight: 700;
+      font-size: 15px; text-decoration: none;
+    }
     #ranking-list { text-align: left; padding-left: 2.2em; line-height: 1.75; }
     #ranking-status { min-height: 1.5em; margin: 8px 0 0; font-size: 0.88rem; color: #a7f3d0; }
     #ranking-status.is-error { color: #fca5a5; }
@@ -93,6 +98,7 @@
       <ol id="ranking-list"></ol>
       <p id="ranking-status" role="status" aria-live="polite"></p>
       <button id="ranking-retry-button" type="button">もう一度遊ぶ</button>
+      <a id="ranking-home-button" class="js-game-nav" href="index.html">元のページに戻る</a>
     </div>
   </div>
 
