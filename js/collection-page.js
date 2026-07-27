@@ -11,6 +11,8 @@ let currentDetailDino = null;
 let arLauncherReady = false;
 let arLaunchInProgress = false;
 let arLoadTimeoutId = 0;
+let collectionSceneSuspendedForAR = false;
+let collectionWebGLContextLost = false;
 
 function isIOSDevice() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -22,7 +24,7 @@ function updateARLaunchButton() {
   if (!button) return;
 
   const launcher = document.getElementById('ar-model-launcher');
-  const supported = launcher?.canActivateAR !== false;
+  const supported = !isIOSDevice() || launcher?.canActivateAR !== false;
   button.disabled = !currentDetailDino || !arLauncherReady || arLaunchInProgress || !supported;
 
   if (arLaunchInProgress) {
@@ -43,28 +45,82 @@ function configureARModelLauncher(dino) {
   if (!launcher || !dino) return;
 
   window.clearTimeout(arLoadTimeoutId);
-  arLauncherReady = false;
+  arLauncherReady = !isIOSDevice();
   arLaunchInProgress = false;
   updateARLaunchButton();
-  setARLaunchStatus('AR用モデルを準備しています…');
+  setARLaunchStatus(isIOSDevice() ? 'AR用モデルを準備しています…' : '準備完了です。ボタンを押すとARを起動します。');
 
-  // Android は端末標準の Scene Viewer を優先すると、WebXR の対応差を受けにくい。
-  // iPhone / iPad は Quick Look だけを指定し、GLB から USDZ を生成して起動する。
-  launcher.setAttribute('ar-modes', isIOSDevice() ? 'quick-look' : 'scene-viewer webxr');
-  launcher.setAttribute('src', dino.model);
+  // AndroidはScene Viewerへ直接渡し、同じGLBを画面内で二重に展開しない。
+  // iPhone / iPadだけQuick Look用にmodel-viewerへ読み込む。
+  launcher.setAttribute('ar-modes', 'quick-look');
+  if (isIOSDevice()) {
+    launcher.setAttribute('src', dino.model);
+  } else {
+    launcher.removeAttribute('src');
+  }
   launcher.setAttribute('alt', `${dino.name}をARで見る`);
 
   // 低速回線や古い端末で永遠に「準備中」にならないよう案内を出す。
-  arLoadTimeoutId = window.setTimeout(() => {
-    if (!arLauncherReady) {
-      setARLaunchStatus('モデルの準備に時間がかかっています。通信状態を確認して少しお待ちください。');
-    }
-  }, 15000);
+  if (isIOSDevice()) {
+    arLoadTimeoutId = window.setTimeout(() => {
+      if (!arLauncherReady) {
+        setARLaunchStatus('モデルの準備に時間がかかっています。通信状態を確認して少しお待ちください。');
+      }
+    }, 15000);
+  }
 }
 
 function setARLaunchStatus(message) {
   const status = document.getElementById('ar-launch-status');
   if (status) status.textContent = message;
+}
+
+function suspendCollectionSceneForAR() {
+  const scene = document.querySelector('#modal-model-wrap a-scene');
+  const model = document.getElementById('modal-model');
+
+  collectionSceneSuspendedForAR = true;
+  scene?.pause?.();
+  model?.removeAttribute('gltf-model');
+}
+
+function restoreCollectionSceneAfterAR() {
+  if (!collectionSceneSuspendedForAR || !currentDetailDino) return;
+
+  const scene = document.querySelector('#modal-model-wrap a-scene');
+  const model = document.getElementById('modal-model');
+  collectionSceneSuspendedForAR = false;
+
+  scene?.play?.();
+  if (model && !model.hasAttribute('gltf-model')) {
+    model.setAttribute('gltf-model', `url(${currentDetailDino.model})`);
+  }
+  requestAnimationFrame(() => {
+    scene?.resize?.();
+    window.setTimeout(() => scene?.resize?.(), 150);
+  });
+}
+
+function launchAndroidSceneViewer(dino) {
+  const modelUrl = new URL(dino.model, window.location.href).href;
+  const sceneViewerUrl =
+    `https://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(modelUrl)}` +
+    `&mode=ar_preferred&title=${encodeURIComponent(dino.name)}`;
+  const intentUrl =
+    `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(modelUrl)}` +
+    `&mode=ar_preferred&title=${encodeURIComponent(dino.name)}` +
+    '#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;end;';
+
+  suspendCollectionSceneForAR();
+  window.setTimeout(() => {
+    if (!document.hidden) restoreCollectionSceneAfterAR();
+  }, 2500);
+
+  if (/Chrome/i.test(navigator.userAgent)) {
+    window.location.href = intentUrl;
+  } else {
+    window.location.href = sceneViewerUrl;
+  }
 }
 
 function launchCurrentModelInAR() {
@@ -73,6 +129,14 @@ function launchCurrentModelInAR() {
 
   if (!arLauncherReady) {
     setARLaunchStatus('AR用モデルを準備中です。ボタンが緑色になるまでお待ちください。');
+    return;
+  }
+
+  if (!isIOSDevice()) {
+    arLaunchInProgress = true;
+    updateARLaunchButton();
+    setARLaunchStatus('ARを起動しています…');
+    launchAndroidSceneViewer(currentDetailDino);
     return;
   }
 
@@ -334,6 +398,7 @@ function closeDetail() {
   currentDetailDino = null;
   arLauncherReady = false;
   arLaunchInProgress = false;
+  collectionSceneSuspendedForAR = false;
   window.clearTimeout(arLoadTimeoutId);
   modalModelZoom = 1;
   updateZoomLabel();
@@ -439,6 +504,35 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
   updateARLaunchButton();
+
+  const scene = document.querySelector('#modal-model-wrap a-scene');
+  scene?.addEventListener('render-target-loaded', () => {
+    const canvas = scene.canvas;
+    if (!canvas || canvas.dataset.contextRecoveryReady) return;
+    canvas.dataset.contextRecoveryReady = 'true';
+    canvas.addEventListener('webglcontextlost', (event) => {
+      event.preventDefault();
+      collectionWebGLContextLost = true;
+    });
+  });
+
+  const recoverAfterAR = () => {
+    if (document.hidden) return;
+    arLaunchInProgress = false;
+    updateARLaunchButton();
+
+    if (collectionWebGLContextLost) {
+      window.location.reload();
+      return;
+    }
+
+    restoreCollectionSceneAfterAR();
+    if (currentDetailDino) {
+      setARLaunchStatus('ARから戻りました。もう一度起動できます。');
+    }
+  };
+  document.addEventListener('visibilitychange', recoverAfterAR);
+  window.addEventListener('pageshow', recoverAfterAR);
 
   document.addEventListener('click', (event) => {
     // 全画面解除ボタンが押されたとき
