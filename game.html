@@ -15,6 +15,10 @@
   <script defer src="js/game-assets/sketch.js?v=6"></script>
 
   <style>
+    #game-shell {
+      transform: scale(var(--game-zoom-compensation, 1));
+      transform-origin: center center;
+    }
     #ranking-modal[hidden] { display: none; }
     #ranking-modal {
       position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center;
@@ -103,6 +107,27 @@
   </div>
 
   <script>
+    // ブラウザメニューから表示倍率を変更されても、
+    // ゲーム枠の見た目とプレイ範囲が拡大しないよう逆倍率で補正します。
+    (function keepGameSizeAtBrowserZoom() {
+      const initialPixelRatio = window.devicePixelRatio || 1;
+
+      function updateGameZoomCompensation() {
+        const currentPixelRatio = window.devicePixelRatio || initialPixelRatio;
+        const compensation = initialPixelRatio / currentPixelRatio;
+        document.documentElement.style.setProperty(
+          '--game-zoom-compensation',
+          String(Math.max(0.25, Math.min(4, compensation)))
+        );
+      }
+
+      updateGameZoomCompensation();
+      window.addEventListener('resize', updateGameZoomCompensation);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', updateGameZoomCompensation);
+      }
+    })();
+
     // ゲーム画面の大きさが変わらないよう、このページ内ではブラウザのズーム操作を止めます。
     document.addEventListener('wheel', function (event) {
       if (event.ctrlKey || event.metaKey) event.preventDefault();
