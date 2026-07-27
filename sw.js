@@ -1,10 +1,11 @@
-const CACHE_NAME = 'open-campus-ar-waiting-game-v10';
+const CACHE_NAME = 'open-campus-ar-waiting-game-v12';
 const CORE_ASSETS = [
   './',
   './index.html',
   './ar.html',
   './collection.html',
   './game.html',
+  './shooting.html',
   './ranking.html',
   './css/common.css',
   './css/ar.css',
